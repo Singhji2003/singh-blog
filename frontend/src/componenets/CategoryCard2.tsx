@@ -1,10 +1,10 @@
 "use client";
 
 import { iconMap } from "./CategoryIcons";
-import type { Category } from "@/app/api/categories/route";
+// import type { Category } from "@/app/api/categories/route";
 
 interface CategoryCardProps {
-  category: Category;
+  category: any;
 }
 
 export default function CategoryCard({ category }: CategoryCardProps) {
