@@ -37,17 +37,17 @@ export default function CategoryCards() {
   ];
 
   return (
-    <div className="flex flex-wrap   gap-8 py-4">
+    <div className="flex flex-wrap  mt-4 md:mt-0 gap-8 py-4">
       {cards.map((card, index) => (
         <div
           key={index}
           onClick={() => router.push(card.link)}
-          className="relative w-[280px] h-[210px] bg-white rounded-2xl shadow-[0_15px_60px_rgba(0,0,0,0.3)] group overflow-hidden cursor-pointer"
+          className="relative md:w-[280px] md:h-[210px] w-[44%] h-[100px] bg-white rounded-2xl md:shadow-[0_15px_60px_rgba(0,0,0,0.3)] group overflow-hidden cursor-pointer"
         >
           {/* Face 1 (Content layer) */}
           <div className="absolute bottom-0 left-0 w-full h-full flex  p-6">
             <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-2">
+              <h2 className="md:text-2xl font-semibold mb-2">
                 {card.title}
               </h2>
 
@@ -66,7 +66,7 @@ export default function CategoryCards() {
             <div className="absolute top-0 left-0 w-1/2 h-full bg-white/10 rounded-l-2xl"></div>
 
             {/* Big number shrinking */}
-            <h2 className="text-white text-2xl font-bold transition-all duration-500 drop-shadow-lg group-hover:text-2xl">
+            <h2 className="text-white md:text-2xl text-lg font-bold transition-all duration-500 drop-shadow-lg group-hover:text-2xl">
               {card.title}
             </h2>
           </div>
