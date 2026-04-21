@@ -5,3 +5,50 @@
 body {
   font-family: "Inter", sans-serif;
 }
+
+/* Fix Chrome autofill hiding Tailwind focus ring */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow:
+    0 0 0px 1000px #ffffff inset,
+    0 0 0px 0px transparent !important;
+
+  box-shadow:
+    0 0 0px 1000px #ffffff inset,
+    0 0 0px 0px transparent !important;
+
+  -webkit-text-fill-color: #374151 !important; /* matches text-gray-700 */
+
+  transition: background-color 9999s ease-in-out 0s;
+}
+/* Keep Tailwind focus ring visible during autofill */
+input:-webkit-autofill:focus {
+  box-shadow:
+    0 0 0px 1000px #ffffff inset,
+    0 0 0 2px rgba(26, 111, 212, 0.3) !important;
+}
+
+@keyframes shakeX {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+.animate-shake {
+  animation: shakeX 0.35s ease-in-out;
+}
