@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/componenets/Navbar";
 import Footer from "@/componenets/Footer";
 import type { Metadata } from "next";
+import { ToastContainer } from "react-toastify";
 
 export const metadata: Metadata = {
   title: "Singh Blog - Latest News, Articles & Insights",
@@ -18,6 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <ToastContainer />
         <Navbar />
         <ThemeRegistry>{children}</ThemeRegistry>
         <Footer />

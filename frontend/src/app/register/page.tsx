@@ -2,6 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import axios from "axios";
+import serverUrl from "../../utils/serverUrl";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 export default function SignupPage() {
   const [data, setData] = useState({
@@ -10,6 +14,7 @@ export default function SignupPage() {
     password: "",
     confirmpassword: "",
   });
+  const [loading, setLoading] = useState(false);
   const [shakeFields, setShakeFields] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -19,12 +24,15 @@ export default function SignupPage() {
     email: string | null;
     password: string | null;
     confirmpassword: string | null;
+    agreed: string | null;
   }>({
     name: null,
     email: null,
     password: null,
     confirmpassword: null,
+    agreed: null,
   });
+  const router = useRouter();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
@@ -32,18 +40,24 @@ export default function SignupPage() {
       ...prev,
       [name]: value,
     }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]: null,
+    }));
   };
 
   const handleSubmit = async () => {
+    if (loading) return; // prevent double click
     let newErrors = {
       name: null as string | null,
       email: null as string | null,
       password: null as string | null,
       confirmpassword: null as string | null,
+      agreed: null as string | null,
     };
 
-    if (!data.name.trim()) {
-      newErrors.name = "*Full name is required";
+    if (!data.name.trim() || data.name.length <= 4) {
+      newErrors.name = "*Full name should be more than 4 character";
     }
 
     if (!data.email.trim()) {
@@ -65,6 +79,9 @@ export default function SignupPage() {
     ) {
       newErrors.confirmpassword = "Passwords do not match";
     }
+    if (!agreed) {
+      newErrors.agreed = "*You must accept Terms & Privacy Policy";
+    }
 
     setErrors(newErrors);
 
@@ -83,7 +100,37 @@ export default function SignupPage() {
       return;
     }
 
-    console.log("Form submitted successfully", data);
+    try {
+      setLoading(true);
+      const response = await axios.post(`${serverUrl}api/v1/auth-register`, {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      });
+
+      if (response.status === 200) {
+        toast.success(response?.data?.message);
+        router.push("/login");
+      }
+    } catch (err: any) {
+      if (err.response) {
+        // Server responded with error status (400, 401, 500 etc.)
+        toast.dismiss();
+        toast.error(err.response.data.message);
+      } else if (err.request) {
+        // Request sent but no response received
+        toast.dismiss();
+        toast.error("Server not responding");
+      } else {
+        // Something else happened
+        toast.dismiss();
+        toast.error("Something went wrong");
+      }
+
+      console.error("Error Detected:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -210,50 +257,77 @@ export default function SignupPage() {
             </div>
 
             {/* Terms */}
-            <div className="flex items-center gap-2 pt-1">
+            <div className="pt-1">
               <div
-                onClick={() => setAgreed(!agreed)}
-                className={`w-4 h-4 rounded border flex items-center justify-center cursor-pointer flex-shrink-0 transition ${
-                  agreed
-                    ? "bg-[#1a6fd4] border-[#1a6fd4]"
-                    : "border-gray-300 bg-white"
-                }`}
+                onClick={() => {
+                  setAgreed((prev) => !prev);
+
+                  setErrors((prev) => ({
+                    ...prev,
+                    agreed: null,
+                  }));
+                }}
+                className={`flex items-center gap-2 cursor-pointer transition
+    ${shakeFields.includes("agreed") ? "animate-shake" : ""}
+    `}
               >
-                {agreed && (
-                  <svg
-                    className="w-2.5 h-2.5 text-white"
-                    fill="none"
-                    viewBox="0 0 10 8"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      d="M1 4l3 3 5-6"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                )}
+                <div
+                  className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition
+${
+  errors.agreed && !agreed
+    ? "border-red-500"
+    : agreed
+      ? "bg-[#1a6fd4] border-[#1a6fd4]"
+      : "border-gray-300 bg-white"
+}
+`}
+                >
+                  {agreed && (
+                    <svg
+                      className="w-2.5 h-2.5 text-white"
+                      fill="none"
+                      viewBox="0 0 10 8"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        d="M1 4l3 3 5-6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                </div>
+
+                <p
+                  className={`text-xs transition ${
+                    errors.agreed ? "text-red-500" : "text-gray-500"
+                  }`}
+                >
+                  I agree to the Terms of Service and Privacy Policy.
+                </p>
               </div>
-              <p className="text-xs text-gray-500">
-                I agree to the{" "}
-                <a href="#" className="text-[#1a6fd4] hover:underline">
-                  Terms of Service
-                </a>{" "}
-                and{" "}
-                <a href="#" className="text-[#1a6fd4] hover:underline">
-                  Privacy Policy
-                </a>
-                .
-              </p>
             </div>
 
             {/* CTA Button */}
             <button
               onClick={handleSubmit}
-              className="w-full py-3 rounded-xl bg-[#1a6fd4] hover:bg-[#155bb5] text-white font-semibold text-sm transition-colors cursor-pointer duration-200 mt-1"
+              disabled={loading}
+              className={`w-full py-3 cursor-pointer rounded-xl text-white font-semibold text-sm transition duration-200 mt-1 flex items-center justify-center gap-2
+  ${
+    loading
+      ? "bg-[#155bb5] cursor-not-allowed"
+      : "bg-[#1a6fd4] hover:bg-[#155bb5]"
+  }`}
             >
-              Create Account
+              {loading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  Creating Account...
+                </>
+              ) : (
+                "Create Account"
+              )}
             </button>
 
             {/* Login Link */}

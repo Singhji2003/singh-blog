@@ -12,7 +12,7 @@ export class UserService {
       return { error: "Please fill all the fields", status: 400 };
     }
 
-    if (name.length < 4) {
+    if (name.length <= 4) {
       return { error: "Name should be atleat 4 characters", status: 400 };
     }
 
