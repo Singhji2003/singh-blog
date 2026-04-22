@@ -28,12 +28,17 @@ jobs:
             echo "Updating backend..."
             cd backend
             npm install
-            pm2 restart backend || pm2 start index.js --name backend
+            pm2 stop backend 
+            pm2 start server.js
+            pm2 save
+            pm2 startup 
 
             echo "Updating frontend..."
             cd ../frontend
             npm install
+            rm -rf .next
+            pm2 stop fronetnd
             npm run build
-            pm2 restart frontend || pm2 start npm --name frontend -- start
+            pm2 start npm --name frontend -- start
 
             echo "Deployment completed successfully 🚀"
