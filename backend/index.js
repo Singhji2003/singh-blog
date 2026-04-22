@@ -23,5 +23,5 @@ app.get("/health", (req, res) => {
 app.use("/api/v1", userRoutes);
 
 app.listen(5000, () => {
-  console.log("Server is Running!");
+  console.log("Server is Running fine!");
 });
