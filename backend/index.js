@@ -17,11 +17,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // health check
 app.get("/health", (req, res) => {
-  return res.status(200).json({ msg: "Server is Running!" });
+  return res.status(200).json({ msg: "Server is Running fine!" });
 });
 
 app.use("/api/v1", userRoutes);
 
 app.listen(5000, () => {
-  console.log("Server is Running fine!");
+  console.log("Server is Running !");
 });
