@@ -1,13 +1,19 @@
 "use client";
 
+import serverUrl from "@/utils/serverUrl";
+import axios from "axios";
 import Link from "next/link";
 import { useState } from "react";
-
+import { toast } from "react-toastify";
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 export default function LoginPage() {
+  const router = useRouter();
   const [data, setData] = useState({
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
 
@@ -18,6 +24,43 @@ export default function LoginPage() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleSubmit = async () => {
+    if (loading) return; // prevent double click
+
+    try {
+      setLoading(true);
+      const response = await axios.post(`${serverUrl}api/v1/auth-login`, {
+        email: data.email,
+        password: data.password,
+      });
+
+      if (response.status === 200) {
+        Cookies.set("token", response?.data?.data?.token);
+        Cookies.set("email", response?.data?.data?.email);
+        toast.success("Logged In Successfully");
+        router.push("/");
+      }
+    } catch (err: any) {
+      if (err.response) {
+        // Server responded with error status (400, 401, 500 etc.)
+        toast.dismiss();
+        toast.error(err.response.data.message);
+      } else if (err.request) {
+        // Request sent but no response received
+        toast.dismiss();
+        toast.error("Server not responding");
+      } else {
+        // Something else happened
+        toast.dismiss();
+        toast.error("Something went wrong");
+      }
+
+      console.error("Error Detected:", err);
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <div className="py-18 -mb-12 bg-[#f0f0ed] flex items-center justify-center p-4 font-sans">
@@ -109,21 +152,33 @@ export default function LoginPage() {
           </div>
 
           {/* Login Button */}
-          <button className="w-full py-3 cursor-pointer rounded-xl bg-[#1a6fd4] hover:bg-[#155bb5] active:bg-[#1150a0] text-white font-semibold text-sm transition-colors duration-200 flex items-center justify-center gap-2 mt-1">
-            Login
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2.2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
-            </svg>
+          <button
+            onClick={handleSubmit}
+            className="w-full py-3 cursor-pointer rounded-xl bg-[#1a6fd4] hover:bg-[#155bb5] active:bg-[#1150a0] text-white font-semibold text-sm transition-colors duration-200 flex items-center justify-center gap-2 mt-1"
+          >
+            {loading ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                Login...
+              </>
+            ) : (
+              <>
+                Login
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
+                </svg>
+              </>
+            )}
           </button>
 
           {/* Sign up link */}

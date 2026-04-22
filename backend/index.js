@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import { dbConnect } from "./db/conn.js";
 import userRoutes from "./routes/user.route.js";
+import categoryRoutes from "./routes/category.route.js";
 import cors from "cors";
 // Initialize app
 const app = express();
@@ -21,6 +22,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api/v1", userRoutes);
+app.use("/api/v1", categoryRoutes);
 
 app.listen(5000, () => {
   console.log("Server is Running !");

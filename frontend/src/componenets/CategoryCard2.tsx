@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { iconMap } from "./CategoryIcons";
 // import type { Category } from "@/app/api/categories/route";
 
@@ -11,7 +12,10 @@ export default function CategoryCard({ category }: CategoryCardProps) {
   const IconComponent = iconMap[category.icon];
 
   return (
-    <div className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group">
+    <Link
+      href={`/category/${category.id}`}
+      className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
+    >
       {/* Icon */}
       <div
         className="w-11 h-11 rounded-xl flex items-center justify-center mb-4"
@@ -24,7 +28,7 @@ export default function CategoryCard({ category }: CategoryCardProps) {
 
       {/* Name */}
       <h3 className="text-[15px] font-semibold text-gray-900 mb-1.5 group-hover:text-blue-600 transition-colors">
-        {category.name}
+        {category.title}
       </h3>
 
       {/* Description */}
@@ -36,6 +40,6 @@ export default function CategoryCard({ category }: CategoryCardProps) {
       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase bg-gray-100 text-gray-500">
         {category.articleCount} Articles
       </span>
-    </div>
+    </Link>
   );
 }

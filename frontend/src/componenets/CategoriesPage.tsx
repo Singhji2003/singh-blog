@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import CategoryCard from "./CategoryCard2";
 import SuggestBanner from "./SuggestBanner";
+import axios from "axios";
+import serverUrl from "@/utils/serverUrl";
 
 const SearchIcon = () => (
   <svg
@@ -42,7 +44,7 @@ const SORT_OPTIONS = [
 export default function CategoriesPage() {
   interface Category {
     id: string;
-    name: string;
+    title: string;
     description: string;
     articleCount: number;
     icon: string;
@@ -50,134 +52,6 @@ export default function CategoriesPage() {
     iconColor: string;
     popular?: boolean;
   }
-
-  const dummyCategories: Category[] = [
-    {
-      id: "technology",
-      name: "Technology",
-      description:
-        "The latest in hardware, software trends, and mental health insights.",
-      articleCount: 124,
-      icon: "technology",
-      iconBg: "#EEF2FF",
-      iconColor: "#6366F1",
-      popular: true,
-    },
-    {
-      id: "ai-future",
-      name: "AI & Future",
-      description: "Neural networks, machine learning, and human evolution.",
-      articleCount: 86,
-      icon: "ai",
-      iconBg: "#F5F3FF",
-      iconColor: "#8B5CF6",
-      popular: true,
-    },
-    {
-      id: "business",
-      name: "Business",
-      description:
-        "Strategies for modern startups and established enterprises.",
-      articleCount: 210,
-      icon: "business",
-      iconBg: "#FFFBEB",
-      iconColor: "#F59E0B",
-      popular: true,
-    },
-    {
-      id: "finance",
-      name: "Finance",
-      description: "Investment tips, market analysis, and wealth management.",
-      articleCount: 95,
-      icon: "finance",
-      iconBg: "#EFF6FF",
-      iconColor: "#3B82F6",
-      popular: true,
-    },
-    {
-      id: "health",
-      name: "Health",
-      description: "Holistic wellness, nutrition, and mental health insights.",
-      articleCount: 158,
-      icon: "health",
-      iconBg: "#FFF1F2",
-      iconColor: "#F43F5E",
-      popular: false,
-    },
-    {
-      id: "education",
-      name: "Education",
-      description: "Resources for lifelong learning and academic excellence.",
-      articleCount: 72,
-      icon: "education",
-      iconBg: "#F0FDF4",
-      iconColor: "#22C55E",
-      popular: false,
-    },
-    {
-      id: "travel",
-      name: "Travel",
-      description:
-        "Hidden gems and comprehensive guides for the wanderlust soul.",
-      articleCount: 112,
-      icon: "travel",
-      iconBg: "#EFF6FF",
-      iconColor: "#1D4ED8",
-      popular: false,
-    },
-    {
-      id: "lifestyle",
-      name: "Lifestyle",
-      description: "Design your daily routine for maximum fulfillment.",
-      articleCount: 230,
-      icon: "lifestyle",
-      iconBg: "#FAF5FF",
-      iconColor: "#A855F7",
-      popular: false,
-    },
-    {
-      id: "food",
-      name: "Food",
-      description: "Culinary adventures, recipes, and fine dining reviews.",
-      articleCount: 89,
-      icon: "food",
-      iconBg: "#FFF7ED",
-      iconColor: "#F97316",
-      popular: false,
-    },
-    {
-      id: "sports",
-      name: "Sports",
-      description:
-        "Comprehensive coverage of athletic events and athlete stories.",
-      articleCount: 143,
-      icon: "sports",
-      iconBg: "#EFF6FF",
-      iconColor: "#3B82F6",
-      popular: false,
-    },
-    {
-      id: "entertainment",
-      name: "Entertainment",
-      description: "Reviews of film, music, and the arts in a modern context.",
-      articleCount: 167,
-      icon: "entertainment",
-      iconBg: "#F0FDF4",
-      iconColor: "#10B981",
-      popular: false,
-    },
-    {
-      id: "motivation",
-      name: "Motivation",
-      description:
-        "Ignite your passion and drive with inspiring thought pieces.",
-      articleCount: 54,
-      icon: "motivation",
-      iconBg: "#FFFBEB",
-      iconColor: "#EAB308",
-      popular: false,
-    },
-  ];
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [total, setTotal] = useState(0);
@@ -189,8 +63,9 @@ export default function CategoriesPage() {
   const fetchCategories = useCallback(async () => {
     setLoading(true);
     try {
-      setCategories(dummyCategories);
-      setTotal(dummyCategories.length);
+      const response = await axios.get(`${serverUrl}api/v1/category`);
+      setCategories(response?.data?.data);
+      setTotal(response?.data?.data?.length);
     } catch (err) {
       console.error("Failed to fetch categories", err);
     } finally {
@@ -223,13 +98,15 @@ export default function CategoriesPage() {
         </div>
 
         {/* Search + Sort row */}
-        <div className="flex items-center justify-between mb-8 gap-4">
-          <div className="flex items-center gap-4 flex-1">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between   mb-6 gap-4">
+          {/* Left side (Search + Sort) */}
+          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
             {/* Search */}
-            <div className="relative w-56">
+            <div className="relative w-full sm:w-64">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                 <SearchIcon />
               </span>
+
               <input
                 type="text"
                 placeholder="Search categories..."
@@ -240,17 +117,17 @@ export default function CategoriesPage() {
             </div>
 
             {/* Sort dropdown */}
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <button
                 onClick={() => setSortOpen((v) => !v)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-[13px] text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all min-w-[148px] justify-between"
+                className="flex items-center justify-between w-full sm:w-[160px] gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-[13px] text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
               >
-                <span>{selectedSortLabel}</span>
+                <span className="truncate">{selectedSortLabel}</span>
                 <ChevronIcon />
               </button>
 
               {sortOpen && (
-                <div className="absolute top-full left-0 mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-20 overflow-hidden">
+                <div className="absolute top-full left-0 mt-1 w-full sm:w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-20 overflow-hidden">
                   {SORT_OPTIONS.map((option) => (
                     <button
                       key={option.value}
@@ -273,7 +150,7 @@ export default function CategoriesPage() {
           </div>
 
           {/* Total count */}
-          <div className="text-[11px] font-semibold tracking-widest uppercase text-gray-400">
+          <div className="text-[11px] font-semibold tracking-widest uppercase text-gray-400 text-left lg:text-right">
             {total} Categories Available
           </div>
         </div>

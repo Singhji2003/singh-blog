@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Logo from "@/assets/images/logo.png";
 import Image from "next/image";
 import Link from "next/link";
-
+import Cookies from "js-cookie";
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Collection", href: "/" },
@@ -38,20 +38,31 @@ const Navbar = () => {
         </div>
 
         {/* Desktop Auth Buttons */}
-        <div className="hidden md:flex gap-6 items-center">
-          <Link
-            href="/login"
-            className="text-black hover:text-blue-600 transition-colors duration-200"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/register"
-            className="px-6 py-2 rounded-full text-white bg-[#0D81DB] hover:bg-blue-700 transition-colors duration-200"
-          >
-            Sign Up
-          </Link>
-        </div>
+        {Cookies.get("token") ? (
+          <div className="hidden md:flex gap-6 items-center">
+            <Link
+              href="/subscribe"
+              className="px-6 py-2 rounded-full text-white bg-[#0D81DB] hover:bg-blue-700 transition-colors duration-200"
+            >
+              Subscribe
+            </Link>
+          </div>
+        ) : (
+          <div className="hidden md:flex gap-6 items-center">
+            <Link
+              href="/login"
+              className="text-black hover:text-blue-600 transition-colors duration-200"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/register"
+              className="px-6 py-2 rounded-full text-white bg-[#0D81DB] hover:bg-blue-700 transition-colors duration-200"
+            >
+              Sign Up
+            </Link>
+          </div>
+        )}
 
         {/* Hamburger Button (Mobile Only) */}
         <button
@@ -99,22 +110,34 @@ const Navbar = () => {
           ))}
 
           {/* Mobile Auth Buttons */}
-          <div className="flex flex-col gap-3 pt-2">
-            <Link
-              href="/login"
-              onClick={closeMenu}
-              className="text-center border border-[#0D81DB] text-[#0D81DB] py-2 rounded-full hover:bg-blue-50 transition-colors duration-200"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/register"
-              onClick={closeMenu}
-              className="text-center px-6 py-2 rounded-full text-white bg-[#0D81DB] hover:bg-blue-700 transition-colors duration-200"
-            >
-              Sign Up
-            </Link>
-          </div>
+          {Cookies.get("token") ? (
+            <>
+              <Link
+                href="/subscribe"
+                onClick={closeMenu}
+                className="text-center px-6 py-2 rounded-full text-white bg-[#0D81DB] hover:bg-blue-700 transition-colors duration-200"
+              >
+                Subscribe
+              </Link>
+            </>
+          ) : (
+            <div className="flex flex-col gap-3 pt-2">
+              <Link
+                href="/login"
+                onClick={closeMenu}
+                className="text-center border border-[#0D81DB] text-[#0D81DB] py-2 rounded-full hover:bg-blue-50 transition-colors duration-200"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/register"
+                onClick={closeMenu}
+                className="text-center px-6 py-2 rounded-full text-white bg-[#0D81DB] hover:bg-blue-700 transition-colors duration-200"
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </nav>
