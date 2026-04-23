@@ -1,5 +1,5 @@
 "use client";
-import CategoryCards from "@/componenets/CategoryCard";
+import CategoryCards from "@/componenets/HomeCategory";
 import serverUrl from "@/utils/serverUrl";
 import axios from "axios";
 import { useEffect, useState } from "react";

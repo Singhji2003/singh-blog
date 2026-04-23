@@ -6,10 +6,9 @@ import Link from "next/link";
 import Cookies from "js-cookie";
 const navLinks = [
   { label: "Home", href: "/" },
-  { label: "Collection", href: "/" },
-  { label: "Philosophy", href: "/" },
-  { label: "About", href: "/" },
-  { label: "Archive", href: "/" },
+  { label: "Domains", href: "/category" },
+  { label: "About", href: "/about" },
+  // { label: "Contact", href: "/contact" },
 ];
 
 const Navbar = () => {

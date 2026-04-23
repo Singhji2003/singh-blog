@@ -5,64 +5,9 @@
 import Link from "next/link";
 import Logo from "@/assets/images/logo.png";
 import Image from "next/image";
-
-// ── Icon components ──────────────────────────────────────────────────────────
-
-function ShareIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-5 h-5"
-    >
-      <circle cx="18" cy="5" r="3" />
-      <circle cx="6" cy="12" r="3" />
-      <circle cx="18" cy="19" r="3" />
-      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-    </svg>
-  );
-}
-
-function GlobeIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-5 h-5"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <line x1="2" y1="12" x2="22" y2="12" />
-      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-    </svg>
-  );
-}
-
-function RssIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-5 h-5"
-    >
-      <path d="M4 11a9 9 0 0 1 9 9" />
-      <path d="M4 4a16 16 0 0 1 16 16" />
-      <circle cx="5" cy="19" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
+import ShareSharpIcon from "@mui/icons-material/ShareSharp";
+import LanguageSharpIcon from "@mui/icons-material/LanguageSharp";
+import RssFeedSharpIcon from "@mui/icons-material/RssFeedSharp";
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 
@@ -75,11 +20,11 @@ const platformLinks = [
 ];
 
 const categoryLinks = [
-  { label: "Technology", href: "#" },
-  { label: "Economics", href: "#" },
-  { label: "Philosophy", href: "#" },
-  { label: "Design", href: "#" },
-  { label: "Science", href: "#" },
+  { label: "Technology", href: "/category/technology" },
+  { label: "Health", href: "/category/health" },
+  { label: "Lifestyle", href: "/category/lifestyle" },
+  { label: "Education", href: "/category/education" },
+  { label: "Sports", href: "/category/sports" },
 ];
 
 const latestFeed = [
@@ -117,19 +62,19 @@ export default function Footer() {
                 aria-label="Share"
                 className="hover:text-gray-800 transition-colors"
               >
-                <ShareIcon />
+                <ShareSharpIcon />
               </button>
               <button
                 aria-label="Website"
                 className="hover:text-gray-800 transition-colors"
               >
-                <GlobeIcon />
+                <LanguageSharpIcon />
               </button>
               <button
                 aria-label="RSS"
                 className="hover:text-gray-800 transition-colors"
               >
-                <RssIcon />
+                <RssFeedSharpIcon />
               </button>
             </div>
           </div>

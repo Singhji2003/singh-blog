@@ -9,7 +9,7 @@ export default function SuggestBanner() {
           viewBox="0 0 260 120"
           className="absolute right-0 top-1/2 -translate-y-1/2 opacity-20"
           width="260"
-          height="120"
+          height="220"
           fill="none"
         >
           <circle cx="180" cy="60" r="80" stroke="#B0B0A8" strokeWidth="28" />

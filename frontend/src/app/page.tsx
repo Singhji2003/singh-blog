@@ -1,12 +1,11 @@
 import Image from "next/image";
-import Hero from "@/assets/images/Hero.webp";
 import Blog from "@/assets/images/blog.jpg";
-import CategoryCards from "@/componenets/CategoryCard";
 import ArrowForwardSharpIcon from "@mui/icons-material/ArrowForwardSharp";
 import ArticleCards from "@/componenets/Articlecards";
 import WeeklyDigest from "@/componenets/Weeklydigest";
 import JoinCTA from "@/componenets/Joincta";
 import Link from "next/link";
+import HomeCategory from "@/componenets/HomeCategory";
 export default function Home() {
   const cards = [
     {
@@ -99,7 +98,7 @@ export default function Home() {
           </Link>
         </div>
 
-        <CategoryCards />
+        <HomeCategory />
       </div>
 
       {/* Rising Discussions */}

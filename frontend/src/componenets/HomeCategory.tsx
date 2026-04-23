@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-export default function CategoryCards() {
+export default function HomeCategory() {
   const router = useRouter();
 
   const cards = [
@@ -47,9 +47,7 @@ export default function CategoryCards() {
           {/* Face 1 (Content layer) */}
           <div className="absolute bottom-0 left-0 w-full h-full flex  p-6">
             <div className="text-center">
-              <h2 className="md:text-2xl font-semibold mb-2">
-                {card.title}
-              </h2>
+              <h2 className="md:text-2xl font-semibold mb-2">{card.title}</h2>
 
               <p className="text-[15px] font-medium text-gray-600">
                 {card.desc}
