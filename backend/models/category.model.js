@@ -8,9 +8,7 @@ const categorySchema = new mongoose.Schema(
     description: {
       type: String,
     },
-    articleCount: {
-      type: Number,
-    },
+   
     icon: {
       type: String,
     },
@@ -29,6 +27,6 @@ const categorySchema = new mongoose.Schema(
   },
 );
 
-const CategoryModel = mongoose.model("categoryModel", categorySchema);
+const CategoryModel = mongoose.model("category", categorySchema);
 
 export default CategoryModel;

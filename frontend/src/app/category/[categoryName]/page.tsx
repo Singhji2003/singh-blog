@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 //  TYPES
 // ═══════════════════════════════════════════════════════════════
 interface Article {
-  id: number;
+  _id: string;
   category: string;
   title: string;
   excerpt: string;
@@ -16,136 +16,10 @@ interface Article {
   authorInitials: string;
   date: string;
   readTime: string;
-  imageType: "robot" | "web3" | "ai" | "quantum";
+  image: string;
 }
-
-// ═══════════════════════════════════════════════════════════════
-//  MOCK DATA
-// ═══════════════════════════════════════════════════════════════
-const gridArticles: Article[] = [
-  {
-    id: 1,
-    category: "TECHNOLOGY",
-    title: "The Dawn of Autonomous Robotics in Urban Logistics",
-    excerpt:
-      "Discover how last-mile delivery is being transformed by a new generation of sidewalk robots being deployed for dense metropolitan areas.",
-    author: "Alex Rivera",
-    authorInitials: "AR",
-    date: "OCT 24",
-    readTime: "8 MIN READ",
-    imageType: "robot",
-  },
-  {
-    id: 2,
-    category: "TECHNOLOGY",
-    title: "Beyond the Hype: Decoupling Web3 from Speculation",
-    excerpt:
-      "A deep dive into the underlying protocols that are actually solving real-world data sovereignty issues without the market noise.",
-    author: "Maya Chen",
-    authorInitials: "MC",
-    date: "OCT 22",
-    readTime: "12 MIN READ",
-    imageType: "web3",
-  },
-  {
-    id: 3,
-    category: "TECHNOLOGY",
-    title: "The AI Governance Gap: Who Regulates the Regulators?",
-    excerpt:
-      "As AI systems become embedded in critical infrastructure, the question of accountability becomes more urgent than ever.",
-    author: "James Park",
-    authorInitials: "JP",
-    date: "OCT 20",
-    readTime: "10 MIN READ",
-    imageType: "ai",
-  },
-  {
-    id: 4,
-    category: "TECHNOLOGY",
-    title: "Quantum Networks: The Next Internet Frontier",
-    excerpt:
-      "Entanglement-based communication promises unhackable networks but the engineering challenges remain enormous.",
-    author: "Sara Lin",
-    authorInitials: "SL",
-    date: "OCT 18",
-    readTime: "9 MIN READ",
-    imageType: "quantum",
-  },
-];
-
-const listArticles = [
-  {
-    id: 5,
-    title: "Quantum Supremacy: The Next Decade of Computing",
-    excerpt:
-      "How near-term quantum processors are already beginning to outperform classical supercomputers in niche chemical simulations.",
-    author: "Dr. James Foster",
-    authorInitials: "JF",
-    date: "OCT 25",
-    readTime: "10 MIN READ",
-  },
-  {
-    id: 6,
-    title: "The Zero Trust Paradigm: A Guide for the Future",
-    excerpt:
-      "Why traditional perimeter security is dead and how the 'never trust, always verify' model is securing the hybrid workforce.",
-    author: "Sarah Jenkins",
-    authorInitials: "SJ",
-    date: "OCT 11",
-    readTime: "14 MIN READ",
-  },
-];
-
-const popularPosts = [
-  {
-    num: "01",
-    title: "The Ethics of Sustainable Tech Architecture",
-    reads: "4.8k reads",
-  },
-  {
-    num: "02",
-    title: "The Future of Wearable Health Sensors",
-    reads: "3.6k reads",
-  },
-];
-
-const topCategories = [
-  { name: "Artificial Intelligence", count: 42 },
-  { name: "Cybersecurity", count: 28 },
-  { name: "Cloud Computing", count: 19 },
-];
-
-const popularTags = [
-  "React",
-  "AI",
-  "Fintech",
-  "UX Design",
-  "Free Energy",
-  "Python",
-];
 
 const tabs = ["Latest", "Most Viewed", "Most Liked"];
-
-// ═══════════════════════════════════════════════════════════════
-//  SMALL COMPONENTS
-// ═══════════════════════════════════════════════════════════════
-function Avatar({ initials, name }: { initials: string; name: string }) {
-  const colors = [
-    "bg-blue-500",
-    "bg-emerald-500",
-    "bg-amber-500",
-    "bg-rose-500",
-    "bg-violet-500",
-  ];
-  const color = colors[name.charCodeAt(0) % colors.length];
-  return (
-    <div
-      className={`w-6 h-6 rounded-full ${color} flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0`}
-    >
-      {initials}
-    </div>
-  );
-}
 
 function ArticleImage({ type }: { type: string }) {
   if (type === "robot")
@@ -288,15 +162,17 @@ function ArticleImage({ type }: { type: string }) {
 type CategoryData = {
   title: string;
   description: string;
+  articleCount: number;
 };
 import { useParams } from "next/navigation";
+import Image from "next/image";
 // ═══════════════════════════════════════════════════════════════
 //  MAIN PAGE
 // ═══════════════════════════════════════════════════════════════
 export default function CategoryPage() {
   const params = useParams();
   const categoryName = params?.categoryName as string;
-
+  const [gridArticles, setGridArticles] = useState<Article[]>([]);
   const [categoryData, setCategoryData] = useState<CategoryData | null>(null);
 
   const [activeTab, setActiveTab] = useState("Latest");
@@ -310,6 +186,11 @@ export default function CategoryPage() {
     });
 
     setCategoryData(response?.data?.data);
+    const articleResponse = await axios.get(
+      `${serverUrl}api/v1/all-blog/${response?.data?.data?.title}`,
+    );
+
+    setGridArticles(articleResponse?.data?.data);
   };
 
   useEffect(() => {
@@ -332,7 +213,7 @@ export default function CategoryPage() {
         </p>
         <div className="flex flex-wrap gap-2">
           <span className="px-3 py-1 bg-white/20 rounded-full text-xs font-medium backdrop-blur-sm">
-            108 Articles
+            Article Count: {categoryData?.articleCount}
           </span>
           <span className="px-3 py-1 bg-white/20 rounded-full text-xs font-medium backdrop-blur-sm">
             ✦ Updated Today
@@ -374,19 +255,25 @@ export default function CategoryPage() {
         {/* ════════════════════════════════
             MAIN CONTENT + SIDEBAR
         ════════════════════════════════ */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="  gap-8">
           {/* ── Articles Grid + List ── */}
-          <div className="lg:col-span-2 space-y-10">
+          <div className=" space-y-10">
             {/* Grid articles (top 4) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className=" flex flex-wrap gap-8">
               {gridArticles.map((article) => (
                 <div
-                  key={article.id}
-                  className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
+                  key={article._id}
+                  className="bg-white  w-[350px] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
                 >
-                  <div className="h-44 overflow-hidden">
+                  <div className="h-56 overflow-hidden">
                     <div className="w-full h-full group-hover:scale-105 transition-transform duration-500">
-                      <ArticleImage type={article.imageType} />
+                      <Image
+                        src={article?.image}
+                        alt="Blog image"
+                        width={200}
+                        height={200}
+                        className="w-full h-full"
+                      />
                     </div>
                   </div>
                   <div className="p-4 flex flex-col gap-2">
@@ -399,57 +286,6 @@ export default function CategoryPage() {
                     <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">
                       {article.excerpt}
                     </p>
-                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <Avatar
-                        initials={article.authorInitials}
-                        name={article.author}
-                      />
-                      <span className="text-xs text-gray-500">
-                        {article.author}
-                      </span>
-                      <span className="text-gray-300 text-xs">·</span>
-                      <span className="text-[10px] text-gray-400 font-medium">
-                        {article.date}
-                      </span>
-                      <span className="text-gray-300 text-xs">·</span>
-                      <span className="text-[10px] text-gray-400">
-                        {article.readTime}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* List articles (next 2) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {listArticles.map((article) => (
-                <div
-                  key={article.id}
-                  className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
-                >
-                  <h3 className="text-sm font-bold text-gray-900 leading-snug group-hover:text-blue-600 transition-colors mb-2">
-                    {article.title}
-                  </h3>
-                  <p className="text-xs text-gray-500 leading-relaxed mb-4 line-clamp-3">
-                    {article.excerpt}
-                  </p>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Avatar
-                      initials={article.authorInitials}
-                      name={article.author}
-                    />
-                    <span className="text-xs text-gray-500">
-                      {article.author}
-                    </span>
-                    <span className="text-gray-300 text-xs">·</span>
-                    <span className="text-[10px] text-gray-400 font-medium">
-                      {article.date}
-                    </span>
-                    <span className="text-gray-300 text-xs">·</span>
-                    <span className="text-[10px] text-gray-400">
-                      {article.readTime}
-                    </span>
                   </div>
                 </div>
               ))}
@@ -508,138 +344,6 @@ export default function CategoryPage() {
               </button>
             </div>
           </div>
-
-          {/* ════════════════════════════════
-              SIDEBAR
-          ════════════════════════════════ */}
-          <aside className="flex flex-col gap-5">
-            {/* Search */}
-            <div className="relative">
-              <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.35-4.35" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search technology..."
-                className="w-full pl-9 pr-4 py-2.5 bg-[#EBE7E7] border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Popular Posts */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-4 h-0.5 bg-blue-500" />
-                <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-                  Popular Posts
-                </p>
-              </div>
-              <div className="flex flex-col gap-4">
-                {popularPosts.map((post) => (
-                  <div
-                    key={post.num}
-                    className="flex gap-3 items-start cursor-pointer group"
-                  >
-                    <span className="text-2xl font-black text-gray-100 leading-none select-none">
-                      {post.num}
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800 group-hover:text-blue-600 transition-colors leading-snug">
-                        {post.title}
-                      </p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">
-                        {post.reads}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Top Categories */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-4 h-0.5 bg-blue-500" />
-                <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-                  Top Categories
-                </p>
-              </div>
-              <div className="flex flex-col gap-3">
-                {topCategories.map((cat) => (
-                  <div
-                    key={cat.name}
-                    className="flex items-center justify-between group cursor-pointer"
-                  >
-                    <span className="text-sm text-gray-700 group-hover:text-blue-600 transition-colors">
-                      {cat.name}
-                    </span>
-                    <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                      {cat.count}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Popular Tags */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-4 h-0.5 bg-blue-500" />
-                <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-                  Popular Tags
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {popularTags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-3 py-1 bg-gray-100 hover:bg-blue-100 hover:text-blue-700 text-gray-600 text-xs rounded-full cursor-pointer transition-colors"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Subscribe Widget */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-5 border border-blue-100">
-              <div className="flex items-start gap-3 mb-3">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg
-                    className="w-4 h-4 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-900">
-                    Curated Tech Insights
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    Weekly breakthroughs delivered to your inbox.
-                  </p>
-                </div>
-              </div>
-              <input
-                type="email"
-                placeholder="Email address"
-                className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg bg-white/80 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-              />
-              <button className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors">
-                Subscribe Now
-              </button>
-            </div>
-          </aside>
         </div>
         {/* ── Explore Other Domains ── */}
         <div className="pb-4 mt-12">

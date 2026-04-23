@@ -4,7 +4,14 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "infiheal-chatbot.s3.ap-south-1.amazonaws.com",
+      },
+    ],
+  },
 };
 
 export default nextConfig;
