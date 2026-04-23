@@ -71,7 +71,7 @@ const HeroSection: React.FC = () => (
       Our Vision
     </p>
 
-    <h1 className="mx-auto   text-4xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+    <h1 className="mx-auto   text-5xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
       About Our <span className="text-[#005EA3]">Blog Platform</span>
     </h1>
 
@@ -131,7 +131,7 @@ const categories: Category[] = [
 ];
 
 const MissionSection: React.FC = () => (
-  <section className="bg-[#f5f5f0] pt-4 px-16 pb-24  ">
+  <section className="bg-[#f5f5f0] pt-4 md:px-16 px-8 pb-24  ">
     {/* Our Story sub-section */}
     <div className="mx-auto mt-10 flex  flex-col items-center gap-10 lg:flex-row lg:items-center lg:text-left">
       {/* Text */}
@@ -351,19 +351,19 @@ const TrustSection: React.FC = () => (
 const CommunitySection: React.FC = () => {
   return (
     <section className="bg-[#F6F3F2] py-24 mt-8   mx-auto">
-      <h2 className="text-3xl mt-2 font-bold text-center ">
+      <h2 className="md:text-3xl text-xl mt-2 font-bold text-center ">
         Ready to Expand Your Horizon?
       </h2>
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
+      <div className="mt-8 flex   items-center justify-center gap-6">
         <Link
           href={"/category"}
-          className="rounded-xl cursor-pointer bg-blue-600 px-10 py-4 text-base font-semibold text-white  transition hover:bg-blue-700   shadow-[0px_8px_10px_-6px_#005EA333,0px_20px_25px_-5px_#005EA333]"
+          className="rounded-xl cursor-pointer bg-blue-600 md:px-10 px-4 py-4 text-base font-semibold text-white  transition hover:bg-blue-700   shadow-[0px_8px_10px_-6px_#005EA333,0px_20px_25px_-5px_#005EA333]"
         >
           Start Reading
         </Link>
         <Link
           href={"/category"}
-          className="rounded-xl cursor-pointer border border-gray-300 bg-[#ffffffab] hover:bg-[#ffffff]  px-10 py-4 text-base font-semibold text-gray-700 shadow-sm transition    "
+          className="rounded-xl cursor-pointer border border-gray-300 bg-[#ffffffab] hover:bg-[#ffffff]  md:px-10 px-4 py-4 text-base font-semibold text-gray-700 shadow-sm transition    "
         >
           Explore Categories
         </Link>
