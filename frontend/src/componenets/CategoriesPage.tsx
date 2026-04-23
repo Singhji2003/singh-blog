@@ -93,7 +93,7 @@ export default function CategoriesPage() {
           </h1>
           <p className="text-[14px] text-gray-500 leading-relaxed max-w-xs">
             Browse articles based on topics that interest you. From cutting-edge
-            tech to personal motivation.
+            tech to personal motivation
           </p>
         </div>
 
