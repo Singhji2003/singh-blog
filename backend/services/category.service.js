@@ -9,6 +9,7 @@ export class CategoryService {
     const cachedData = await CacheService.get(cacheKey);
 
     if (cachedData) {
+      console.log("got it from here");
       return JSON.parse(cachedData);
     }
 
@@ -28,6 +29,7 @@ export class CategoryService {
     );
 
     await CacheService.set(cacheKey, updatedCategories);
+    console.log("got it from new");
 
     return updatedCategories;
   }
