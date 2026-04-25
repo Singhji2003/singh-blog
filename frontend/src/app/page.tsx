@@ -40,7 +40,7 @@ export default function Home() {
     },
   ];
   return (
-    <div className="mx-8">
+    <div className="md:mx-8 mx-4">
       {/* Hero Section */}
       <div className="flex md:flex-row flex-col-reverse justify-between items-center gap-8 md:mt-24 mt-4 ">
         <div className="flex flex-col gap-6">

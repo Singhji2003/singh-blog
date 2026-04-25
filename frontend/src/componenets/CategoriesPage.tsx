@@ -63,7 +63,10 @@ export default function CategoriesPage() {
   const fetchCategories = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${serverUrl}api/v1/category`);
+      const response = await axios.get(
+        `${serverUrl}api/v1/category?hint=${search}`,
+      );
+      
       setCategories(response?.data?.data);
       setTotal(response?.data?.data?.length);
     } catch (err) {
@@ -74,10 +77,7 @@ export default function CategoriesPage() {
   }, [search, sort]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchCategories();
-    }, 200);
-    return () => clearTimeout(timer);
+    fetchCategories();
   }, [fetchCategories]);
 
   const selectedSortLabel =
@@ -117,7 +117,7 @@ export default function CategoriesPage() {
             </div>
 
             {/* Sort dropdown */}
-            <div className="relative w-full sm:w-auto">
+            {/* <div className="relative w-full sm:w-auto">
               <button
                 onClick={() => setSortOpen((v) => !v)}
                 className="flex items-center justify-between w-full sm:w-[160px] gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-[13px] text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
@@ -146,7 +146,7 @@ export default function CategoriesPage() {
                   ))}
                 </div>
               )}
-            </div>
+            </div> */}
           </div>
 
           {/* Total count */}
@@ -179,13 +179,13 @@ export default function CategoriesPage() {
               </div>
             ))}
           </div>
-        ) : categories.length === 0 ? (
+        ) : categories?.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
             <p className="text-[15px]">No categories found for "{search}"</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
-            {categories.map((category) => (
+            {categories?.map((category) => (
               <CategoryCard key={category.id} category={category} />
             ))}
           </div>

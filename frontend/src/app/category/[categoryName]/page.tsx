@@ -17,147 +17,9 @@ interface Article {
   date: string;
   readTime: string;
   image: string;
+  link: String;
 }
-
 const tabs = ["Latest", "Most Viewed", "Most Liked"];
-
-function ArticleImage({ type }: { type: string }) {
-  if (type === "robot")
-    return (
-      <div className="w-full h-full bg-gradient-to-br from-cyan-900 via-teal-900 to-slate-900 flex items-center justify-center">
-        <svg viewBox="0 0 120 120" className="w-20 h-20 opacity-80">
-          <circle
-            cx="60"
-            cy="35"
-            r="22"
-            fill="none"
-            stroke="#22d3ee"
-            strokeWidth="2"
-          />
-          <rect
-            x="42"
-            y="57"
-            width="36"
-            height="30"
-            rx="4"
-            fill="none"
-            stroke="#22d3ee"
-            strokeWidth="2"
-          />
-          <rect
-            x="28"
-            y="62"
-            width="12"
-            height="20"
-            rx="3"
-            fill="none"
-            stroke="#06b6d4"
-            strokeWidth="1.5"
-          />
-          <rect
-            x="80"
-            y="62"
-            width="12"
-            height="20"
-            rx="3"
-            fill="none"
-            stroke="#06b6d4"
-            strokeWidth="1.5"
-          />
-          <circle cx="53" cy="30" r="4" fill="#22d3ee" opacity="0.7" />
-          <circle cx="67" cy="30" r="4" fill="#22d3ee" opacity="0.7" />
-          <line
-            x1="48"
-            y1="87"
-            x2="48"
-            y2="105"
-            stroke="#22d3ee"
-            strokeWidth="2"
-          />
-          <line
-            x1="72"
-            y1="87"
-            x2="72"
-            y2="105"
-            stroke="#22d3ee"
-            strokeWidth="2"
-          />
-        </svg>
-      </div>
-    );
-  if (type === "web3")
-    return (
-      <div className="w-full h-full bg-gradient-to-br from-emerald-900 via-green-900 to-slate-900 flex items-center justify-center">
-        <div className="text-green-400  font-bold text-3xl leading-tight opacity-60 select-none text-center">
-          <div>BCCON</div>
-          <div>BCCON</div>
-          <div>BBCON</div>
-        </div>
-      </div>
-    );
-  if (type === "ai")
-    return (
-      <div className="w-full h-full bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 flex items-center justify-center">
-        <div className="text-blue-400  font-black text-6xl opacity-60">AI</div>
-      </div>
-    );
-  return (
-    <div className="w-full h-full bg-gradient-to-br from-violet-900 via-purple-900 to-slate-900 flex items-center justify-center">
-      <svg viewBox="0 0 120 120" className="w-20 h-20 opacity-80">
-        <circle
-          cx="60"
-          cy="60"
-          r="30"
-          fill="none"
-          stroke="#a78bfa"
-          strokeWidth="1.5"
-          strokeDasharray="4 2"
-        />
-        <circle
-          cx="60"
-          cy="60"
-          r="15"
-          fill="none"
-          stroke="#7c3aed"
-          strokeWidth="2"
-        />
-        <circle cx="60" cy="60" r="5" fill="#a78bfa" />
-        <line
-          x1="60"
-          y1="15"
-          x2="60"
-          y2="45"
-          stroke="#a78bfa"
-          strokeWidth="1.5"
-        />
-        <line
-          x1="60"
-          y1="75"
-          x2="60"
-          y2="105"
-          stroke="#a78bfa"
-          strokeWidth="1.5"
-        />
-        <line
-          x1="15"
-          y1="60"
-          x2="45"
-          y2="60"
-          stroke="#a78bfa"
-          strokeWidth="1.5"
-        />
-        <line
-          x1="75"
-          y1="60"
-          x2="105"
-          y2="60"
-          stroke="#a78bfa"
-          strokeWidth="1.5"
-        />
-      </svg>
-    </div>
-  );
-}
 
 type CategoryData = {
   title: string;
@@ -166,6 +28,7 @@ type CategoryData = {
 };
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 // ═══════════════════════════════════════════════════════════════
 //  MAIN PAGE
 // ═══════════════════════════════════════════════════════════════
@@ -241,7 +104,7 @@ export default function CategoryPage() {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          {/* <div className="flex items-center gap-2 text-sm text-gray-500">
             <span className="hidden sm:inline text-xs font-medium text-gray-400 tracking-widest uppercase">
               Sort By
             </span>
@@ -249,7 +112,7 @@ export default function CategoryPage() {
               <option> Newest First</option>
               <option> Oldest First</option>
             </select>
-          </div>
+          </div> */}
         </div>
 
         {/* ════════════════════════════════
@@ -260,39 +123,57 @@ export default function CategoryPage() {
           <div className=" space-y-10">
             {/* Grid articles (top 4) */}
             <div className=" flex flex-wrap gap-8">
-              {gridArticles.map((article) => (
-                <div
-                  key={article._id}
-                  className="bg-white  w-[350px] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
-                >
-                  <div className="h-56 overflow-hidden">
-                    <div className="w-full h-full group-hover:scale-105 transition-transform duration-500">
-                      <Image
-                        src={article?.image}
-                        alt="Blog image"
-                        width={200}
-                        height={200}
-                        className="w-full h-full"
-                      />
+              {gridArticles.length > 0 ? (
+                gridArticles.map((article) => (
+                  <Link
+                    href={`/category/${categoryName}/${article.link}`}
+                    key={article._id}
+                    className="bg-white  w-[350px] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
+                  >
+                    <div className="h-56 overflow-hidden">
+                      <div className="w-full h-full group-hover:scale-105 transition-transform duration-500">
+                        <Image
+                          src={article?.image}
+                          alt="Blog image"
+                          width={200}
+                          height={200}
+                          className="w-full h-full"
+                        />
+                      </div>
                     </div>
+                    <div className="p-4 flex flex-col gap-2">
+                      <p className="text-[10px] font-bold tracking-widest text-blue-500 uppercase">
+                        {article.category}
+                      </p>
+                      <h3 className="text-sm font-bold text-gray-900 leading-snug group-hover:text-blue-600 transition-colors">
+                        {article.title}
+                      </h3>
+                      <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">
+                        {article.excerpt}
+                      </p>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="w-full flex flex-col items-center justify-center text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                  <div className="w-20 h-20 flex items-center justify-center rounded-full bg-blue-100 text-blue-500 text-3xl mb-4">
+                    📚
                   </div>
-                  <div className="p-4 flex flex-col gap-2">
-                    <p className="text-[10px] font-bold tracking-widest text-blue-500 uppercase">
-                      {article.category}
-                    </p>
-                    <h3 className="text-sm font-bold text-gray-900 leading-snug group-hover:text-blue-600 transition-colors">
-                      {article.title}
-                    </h3>
-                    <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">
-                      {article.excerpt}
-                    </p>
-                  </div>
+
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    No articles available yet
+                  </h3>
+
+                  <p className="text-sm text-gray-500 max-w-md">
+                    We’re working on adding articles to this category. Please
+                    check back soon or explore other domains below.
+                  </p>
                 </div>
-              ))}
+              )}
             </div>
 
             {/* ── Pagination ── */}
-            <div className="flex items-center justify-center gap-1 py-4">
+            {/* <div className="flex items-center justify-center gap-1 py-4">
               <button className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors">
                 <svg
                   className="w-4 h-4"
@@ -342,7 +223,7 @@ export default function CategoryPage() {
                   />
                 </svg>
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
         {/* ── Explore Other Domains ── */}

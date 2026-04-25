@@ -37,7 +37,7 @@ export default function HomeCategory() {
   ];
 
   return (
-    <div className="flex flex-wrap  mt-4 md:mt-0 gap-8 py-4">
+    <div className="flex flex-wrap  mt-4 md:mt-0 md:gap-8 gap-6 py-4">
       {cards.map((card, index) => (
         <div
           key={index}

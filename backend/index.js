@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 import { dbConnect } from "./db/conn.js";
 import userRoutes from "./routes/user.route.js";
 import categoryRoutes from "./routes/category.route.js";
-import blogRoutes from "./routes/blog.router.js";
+import blogRoutes from "./routes/blog.route.js";
+import contactRoutes from "./routes/contact.route.js";
 import cors from "cors";
 import redisClient from "./config/redis.js";
 await redisClient.connect();
@@ -27,6 +28,7 @@ app.get("/health", (req, res) => {
 app.use("/api/v1", userRoutes);
 app.use("/api/v1", categoryRoutes);
 app.use("/api/v1", blogRoutes);
+app.use("/api/v1", contactRoutes);
 
 app.listen(5000, () => {
   console.log("Server is Running !");

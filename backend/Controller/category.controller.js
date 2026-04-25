@@ -3,7 +3,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 export class CategoryController {
   static getCategory = async (req, res) => {
-    const response = await CategoryService.getCategory();
+    const response = await CategoryService.getCategory(req.query);
 
     return ApiResponse.success(res, response, "Category is Fetched", 200);
   };

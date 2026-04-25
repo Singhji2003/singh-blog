@@ -17,7 +17,9 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import SendIcon from "@mui/icons-material/Send";
 import Link from "next/link";
 import Image from "next/image";
-
+import axios from "axios";
+import serverUrl from "@/utils/serverUrl";
+import { toast } from "react-toastify";
 // ─────────────────────────────────────────────
 // FAQ Section
 // ─────────────────────────────────────────────
@@ -111,23 +113,23 @@ const contactCards = [
     bg: "bg-blue-50",
     title: "Email Us",
     subtitle: "General inquiries and story pitches.",
-    link: "hello@thecurator.com",
-    href: "mailto:hello@thecurator.com",
+    link: "arpansinghrajput123@gmail.com",
+    href: "mailto:arpansinghrajput123@gmail.com",
   },
   {
     icon: <HeadsetMicOutlinedIcon className="text-purple-500" />,
     bg: "bg-purple-50",
     title: "Support",
     subtitle: "Technical issues and account help.",
-    link: "support@thecurator.com",
-    href: "mailto:support@thecurator.com",
+    link: "support@singhblog.in",
+    href: "mailto:support@singhblog.in",
   },
   {
     icon: <LocationOnOutlinedIcon className="text-orange-400" />,
     bg: "bg-orange-50",
     title: "Office",
     subtitle: "Visit our creative studio in Berlin.",
-    link: "123 Editorial Way, DE",
+    link: "Gurgaon Haryana 122002",
     href: "https://maps.google.com",
   },
 ];
@@ -175,9 +177,22 @@ const ContactSection: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Message sent! We'll get back to you soon.");
+
+    await axios.post(`${serverUrl}api/v1/contact`, {
+      name: form.name,
+      email: form.email,
+      subject: form.subject,
+      message: form.message,
+    });
+    toast.success("Message sent! We'll get back to you soon.");
+    setForm({
+      name: "",
+      email: "",
+      subject: "",
+      message: "",
+    });
   };
 
   return (
@@ -257,7 +272,7 @@ const ContactSection: React.FC = () => {
             <Image
               src={ContactIMG}
               alt="contact"
-              className="w-[70%] object-cover mt-4 rounded-xl h-[300px]  "
+              className="md:w-[70%] w-full object-cover mt-4 rounded-xl md:h-[300px] h-[200px]  "
             />
           </div>
 
@@ -329,7 +344,7 @@ const ContactSection: React.FC = () => {
 
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="flex w-full cursor-pointer outline-none items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               <SendIcon fontSize="small" />
               Send Message
