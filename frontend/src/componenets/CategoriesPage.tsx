@@ -66,7 +66,7 @@ export default function CategoriesPage() {
       const response = await axios.get(
         `${serverUrl}api/v1/category?hint=${search}`,
       );
-      
+      console.log(response)
       setCategories(response?.data?.data);
       setTotal(response?.data?.data?.length);
     } catch (err) {

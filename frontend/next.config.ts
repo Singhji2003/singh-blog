@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "infiheal-chatbot.s3.ap-south-1.amazonaws.com",
+        hostname: "res.cloudinary.com",
       },
     ],
   },
