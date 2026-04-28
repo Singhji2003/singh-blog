@@ -23,6 +23,7 @@ import QuizOutlinedIcon from "@mui/icons-material/QuizOutlined";
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import RestoreOutlinedIcon from "@mui/icons-material/RestoreOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
+import serverUrl from "@/utils/serverUrl";
 
 // ─────────────────────────────────────────────
 // Types
@@ -502,7 +503,7 @@ const AddBlog: React.FC = () => {
 
     // 2. Also send to API with status: "draft"
     try {
-      const res = await fetch(`/api/v1/add-blog`, {
+      const res = await fetch(`${serverUrl}api/v1/add-blog`, {
         method: "POST",
         body: buildFormData("draft"),
       });
@@ -524,7 +525,7 @@ const AddBlog: React.FC = () => {
     setStatus("loading");
 
     try {
-      const res = await fetch(`/api/v1/add-blog`, {
+      const res = await fetch(`${serverUrl}api/v1/add-blog`, {
         method: "POST",
         body: buildFormData("published"),
       });
