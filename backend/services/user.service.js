@@ -65,6 +65,11 @@ export class UserService {
 
     const token = await jsonwebtoken.sign(tokenData, process.env.JWT_SECRET);
 
-    return { email: exisitingUser.email, name: exisitingUser.name, token };
+    return {
+      email: exisitingUser.email,
+      name: exisitingUser.name,
+      id: exisitingUser._id,
+      token,  
+    };
   };
 }

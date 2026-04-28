@@ -2,22 +2,25 @@
 import serverUrl from "@/utils/serverUrl";
 import axios from "axios";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import Head from "next/head";
+import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
+/* ─── Types ─────────────────────────────────────────────── */
 interface FAQ {
   question: string;
   answer: string;
 }
 
 interface Comment {
-  id: string;
   name: string;
-  text: string;
-  date: string;
+  comment: string;
+  createdAt: ReactNode;
+  id: string;
 }
-
 interface BlogData {
+  _id: string;
   title: string;
   metaDescription: string;
   metaTitle: string;
@@ -25,269 +28,300 @@ interface BlogData {
   image: string;
   htmlBody: string;
   faq: FAQ[];
+  saved: boolean;
+  likes: string[];
+  comments: Comment[];
 }
 
+/* ─── Helpers ────────────────────────────────────────────── */
+const userId = () => Cookies.get("Id") ?? "";
+
+/* ─── Main Component ─────────────────────────────────────── */
 export default function BlogPage() {
   const params = useParams();
   const link = params?.link as string;
+
   const [blogData, setBlogData] = useState<BlogData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saved, setSaved] = useState(false);
   const [savingLoading, setSavingLoading] = useState(false);
+  const [liking, setLiking] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentName, setCommentName] = useState("");
-  const [commentText, setCommentText] = useState("");
+  const [commentText, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
-  const [liking, setLiking] = useState(false);
 
-  const getBlogData = async () => {
+  const [saved, setSaved] = useState(false);
+
+  /* ── Fetch ── */
+  const fetchBlog = async () => {
     try {
-      const response = await axios.get(`${serverUrl}api/v1/blog/${link}`);
-      const data = response?.data?.data;
-      setBlogData(data);
-      setLikeCount(data?.likes ?? 0);
+      const { data } = await axios.get(
+        `${serverUrl}api/v1/blog/${link}?id=${userId()}`,
+      );
+      const blog: BlogData = data?.data;
+
+      setBlogData(blog);
+      setComments(blog.comments || []); // ✅ ADD THIS
+
+      setLikeCount(blog.likes?.length ?? 0);
+      setLiked(blog.likes?.includes(userId()) ?? false);
+      setSaved(blog.saved ?? false);
     } finally {
       setLoading(false);
     }
   };
-
   useEffect(() => {
-    if (link) getBlogData();
+    if (link) fetchBlog();
   }, [link]);
 
+  /* ── Save ── */
   const handleSave = async () => {
+    if (!userId()) return toast.error("Please login first to save the blog");
     setSavingLoading(true);
+    // Optimistic update
+    const nextSaved = !saved;
+    setSaved(nextSaved);
     try {
-      await axios.post(`${serverUrl}api/v1/blog/save`, { link });
-      setSaved(true);
+      await axios.post(`${serverUrl}api/v1/save-blog`, {
+        id: userId(),
+        blogId: blogData?._id,
+      });
     } catch {
+      setSaved(!nextSaved); // rollback
     } finally {
       setSavingLoading(false);
     }
   };
 
+  /* ── Like ── */
   const handleLike = async () => {
-    if (liked || liking) return;
+    if (!userId()) return toast.error("Please login first to like the blog");
+    if (liking) return;
     setLiking(true);
+    // Optimistic update
+    const nextLiked = !liked;
+    setLiked(nextLiked);
+    setLikeCount((c) => c + (nextLiked ? 1 : -1));
     try {
-      await axios.post(`${serverUrl}api/v1/blog/${link}/like`);
-      setLiked(true);
-      setLikeCount((prev) => prev + 1);
+      await axios.post(`${serverUrl}api/v1/like-blog`, {
+        id: userId(),
+        blogId: blogData?._id,
+      });
     } catch {
+      setLiked(!nextLiked); // rollback
+      setLikeCount((c) => c + (nextLiked ? -1 : 1));
     } finally {
       setLiking(false);
     }
   };
 
+  /* ── Comment ── */
   const handleCommentSubmit = async () => {
     if (!commentName.trim() || !commentText.trim()) return;
+    if (Cookies.get("Id")) {
+    }
     setSubmitting(true);
+
+    const newComment = {
+      id: Date.now().toString(), // temp id
+      name: commentName,
+      comment: commentText,
+      createdAt: new Date().toLocaleString(),
+    };
+
     try {
-      await axios.post(`${serverUrl}api/v1/blog/${link}/comments`, {
+      // ✅ Optimistic UI update
+      setComments((prev) => [newComment, ...prev]);
+
+      await axios.post(`${serverUrl}api/v1/post-comment`, {
         name: commentName,
-        text: commentText,
+        comment: commentText,
+        id: Cookies.get("Id"),
+        blogId: blogData?._id,
       });
-      setComments((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          name: commentName,
-          text: commentText,
-          date: new Date().toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          }),
-        },
-      ]);
+
       setCommentName("");
-      setCommentText("");
-    } catch {
+      setComment("");
+    } catch (err) {
+      // rollback if needed
+      setComments((prev) => prev.filter((c) => c.id !== newComment.id));
     } finally {
       setSubmitting(false);
     }
   };
 
+  /* ── Render ── */
   if (loading) return <BlogSkeleton />;
   if (!blogData) return null;
 
+  const displayTitle = blogData.metaTitle || blogData.title;
+  const displayDesc = blogData.metaDescription || blogData.title;
+
   return (
     <>
-      {/* ── SEO Meta Tags ── */}
+      {/* SEO */}
       <Head>
-        {/* Primary */}
-        <title>{blogData.metaTitle || blogData.title}</title>
-        <meta
-          name="description"
-          content={blogData.metaDescription || blogData.title}
-        />
-
-        {/* Open Graph (Facebook / LinkedIn / WhatsApp previews) */}
+        <title>{displayTitle}</title>
+        <meta name="description" content={displayDesc} />
         <meta property="og:type" content="article" />
-        <meta
-          property="og:title"
-          content={blogData.metaTitle || blogData.title}
-        />
-        <meta
-          property="og:description"
-          content={blogData.metaDescription || blogData.title}
-        />
+        <meta property="og:title" content={displayTitle} />
+        <meta property="og:description" content={displayDesc} />
         {blogData.image && (
           <meta property="og:image" content={blogData.image} />
         )}
         <meta property="og:url" content={`${serverUrl}blog/${link}`} />
-
-        {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta
-          name="twitter:title"
-          content={blogData.metaTitle || blogData.title}
-        />
-        <meta
-          name="twitter:description"
-          content={blogData.metaDescription || blogData.title}
-        />
+        <meta name="twitter:title" content={displayTitle} />
+        <meta name="twitter:description" content={displayDesc} />
         {blogData.image && (
           <meta name="twitter:image" content={blogData.image} />
         )}
-
-        {/* Canonical */}
         <link rel="canonical" href={`${serverUrl}blog/${link}`} />
       </Head>
 
-      <article className="w-[90%] md:w-[70%] lg:w-[60%] flex flex-col mx-auto px-4 md:px-6 py-12">
+      <article className="w-[90%] md:w-[70%] lg:w-[58%] flex flex-col mx-auto px-4 md:px-6 py-12">
         {/* Category */}
         <span className="flex w-max mx-auto items-center gap-1.5 bg-blue-50 text-blue-600 text-xs font-semibold tracking-widest uppercase px-3 py-1.5 rounded-full mb-5">
           ✦ {blogData.category}
         </span>
 
         {/* Title */}
-        <h1 className="text-3xl md:text-4xl font-bold leading-tight tracking-tight text-gray-950 mb-5 text-center">
+        <h1 className="text-3xl md:text-4xl font-bold leading-tight tracking-tight text-gray-950 mb-6 text-center">
           {blogData.title}
         </h1>
 
-        {/* Meta row */}
-        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-gray-500 mb-8 pb-6 border-b border-gray-100">
-          {/* Author */}
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-600 flex items-center justify-center text-white text-xs font-semibold">
-              AU
-            </div>
-            <span className="font-medium text-gray-700">Author Name</span>
-            <span className="text-gray-300">·</span>
-            <span>12 min read</span>
-          </div>
-
-          {/* Like + Save */}
-          <div className="flex items-center gap-2">
-            {/* Like button */}
-            <button
-              onClick={handleLike}
-              disabled={liked || liking}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium border transition-all duration-200
-                ${
+        {/* Action bar */}
+        <div className="flex items-center justify-center gap-3 mb-8 pb-6 border-b border-gray-100">
+          {/* Like button */}
+          <button
+            onClick={handleLike}
+            disabled={liking}
+            title={liked ? "Unlike" : "Like"}
+            className={`group relative cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 select-none
+              ${
+                liked
+                  ? "bg-rose-500 text-white shadow-sm shadow-rose-200"
+                  : "bg-white text-gray-500 border border-gray-200 hover:border-rose-300 hover:text-rose-500 hover:bg-rose-50"
+              }`}
+          >
+            {liking ? (
+              <Spinner
+                cls={
                   liked
-                    ? "bg-rose-50 text-rose-500 border-rose-200 cursor-default"
-                    : "bg-white text-gray-500 border-gray-200 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 cursor-pointer"
-                }`}
+                    ? "border-white/40 border-t-white"
+                    : "border-rose-200 border-t-rose-500"
+                }
+              />
+            ) : (
+              <svg
+                className={`w-4 h-4 transition-transform duration-150 ${!liked ? "group-hover:scale-110" : ""}`}
+                fill={liked ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                />
+              </svg>
+            )}
+            <span
+              className={`text-xs font-semibold tabular-nums ${liked ? "text-white" : ""}`}
             >
-              {liking ? (
-                <span className="w-4 h-4 border-2 border-rose-200 border-t-rose-500 rounded-full animate-spin" />
-              ) : (
-                <svg
-                  className="w-4 h-4"
-                  fill={liked ? "currentColor" : "none"}
-                  stroke="currentColor"
-                  strokeWidth={1.8}
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                  />
-                </svg>
-              )}
-              <span>{likeCount}</span>
-            </button>
+              {likeCount}
+            </span>
+          </button>
 
-            {/* Save button */}
-            <button
-              onClick={handleSave}
-              disabled={saved || savingLoading}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-medium border transition-all duration-200
-                ${
+          {/* Divider */}
+          <div className="w-px h-5 bg-gray-200" />
+
+          {/* Save button */}
+          <button
+            onClick={handleSave}
+            disabled={savingLoading}
+            title={saved ? "Unsave" : "Save for later"}
+            className={`group flex cursor-pointer items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 select-none
+              ${
+                saved
+                  ? "bg-indigo-50 text-indigo-600 border-indigo-200 shadow-sm"
+                  : "bg-white text-gray-500 border-gray-200 hover:border-gray-400 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+          >
+            {savingLoading ? (
+              <Spinner
+                cls={
                   saved
-                    ? "bg-green-50 text-green-600 border-green-200 cursor-default"
-                    : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300 cursor-pointer"
-                }`}
-            >
-              {savingLoading ? (
-                <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-              ) : saved ? (
-                <svg
-                  className="w-4 h-4"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
-                </svg>
-              ) : (
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.8}
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                  />
-                </svg>
-              )}
-              {savingLoading ? "Saving..." : saved ? "Saved" : "Save"}
-            </button>
-          </div>
+                    ? "border-indigo-200 border-t-indigo-500"
+                    : "border-gray-300 border-t-gray-600"
+                }
+              />
+            ) : (
+              <svg
+                className={`w-4 h-4 transition-transform duration-150 ${!saved ? "group-hover:scale-110" : ""}`}
+                fill={saved ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                />
+              </svg>
+            )}
+            <span className="text-xs font-semibold">
+              {savingLoading ? "Saving…" : saved ? "Saved" : "Save"}
+            </span>
+          </button>
         </div>
 
         {/* Hero Image */}
         {blogData.image && (
           <img
             src={blogData.image}
-            alt={blogData.metaTitle || blogData.title}
+            alt={displayTitle}
             className="w-full aspect-video object-cover rounded-xl mb-10"
           />
         )}
 
-        {/* HTML Body */}
+        {/* Body */}
         <div
           className="blog-content w-full"
           dangerouslySetInnerHTML={{ __html: blogData.htmlBody }}
         />
 
-        {/* ── Like CTA (bottom of article) ── */}
-        <div className="mt-12 flex flex-col items-center gap-3 py-8 border-y border-gray-100">
-          <p className="text-sm text-gray-500">Did you enjoy this article?</p>
+        {/* Bottom Like CTA */}
+        <div className="mt-12 flex flex-col items-center gap-4 py-10 border-y border-gray-100">
+          <p className="text-sm text-gray-400 tracking-wide uppercase font-medium text-xs">
+            Was this helpful?
+          </p>
           <button
             onClick={handleLike}
-            disabled={liked || liking}
-            className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold border-2 transition-all duration-300
+            disabled={liking}
+            className={`group flex items-center gap-2.5 px-7 py-3 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm
               ${
                 liked
-                  ? "bg-rose-500 text-white border-rose-500 cursor-default scale-105"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-rose-400 hover:text-rose-500 hover:scale-105 cursor-pointer"
+                  ? "bg-rose-500 text-white shadow-rose-200"
+                  : "bg-white text-gray-600 border border-gray-200 hover:border-rose-300 hover:text-rose-500 hover:bg-rose-50 hover:shadow-rose-100"
               }`}
           >
             {liking ? (
-              <span className="w-4 h-4 border-2 border-rose-200 border-t-white rounded-full animate-spin" />
+              <Spinner
+                cls={
+                  liked
+                    ? "border-white/40 border-t-white"
+                    : "border-rose-200 border-t-rose-500"
+                }
+              />
             ) : (
               <svg
-                className="w-5 h-5"
+                className={`w-5 h-5 transition-transform duration-150 ${!liked ? "group-hover:scale-110" : "animate-[heartbeat_0.3s_ease-out]"}`}
                 fill={liked ? "currentColor" : "none"}
                 stroke="currentColor"
                 strokeWidth={1.8}
@@ -300,12 +334,14 @@ export default function BlogPage() {
                 />
               </svg>
             )}
-            {liked ? `Liked · ${likeCount}` : `Like this · ${likeCount}`}
+            {liked
+              ? `Liked · ${likeCount}`
+              : `Like this article · ${likeCount}`}
           </button>
         </div>
 
-        {/* ── FAQ Section ── */}
-        {blogData.faq && blogData.faq.length > 0 && (
+        {/* FAQ */}
+        {blogData.faq?.length > 0 && (
           <section className="mt-14 w-full">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Frequently asked questions
@@ -323,21 +359,7 @@ export default function BlogPage() {
                     <span className="font-medium text-gray-800 text-sm md:text-base">
                       {item.question}
                     </span>
-                    <svg
-                      className={`w-4 h-4 flex-shrink-0 text-gray-400 transition-transform duration-200 ${
-                        openFaq === idx ? "rotate-180" : ""
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
+                    <ChevronIcon open={openFaq === idx} />
                   </button>
                   {openFaq === idx && (
                     <div className="px-5 pb-5 pt-1 bg-white text-gray-600 text-sm md:text-base leading-relaxed border-t border-gray-100">
@@ -350,7 +372,7 @@ export default function BlogPage() {
           </section>
         )}
 
-        {/* ── Comments Section ── */}
+        {/* Comments */}
         <section className="mt-14 w-full">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
             Comments{comments.length > 0 && ` (${comments.length})`}
@@ -371,9 +393,9 @@ export default function BlogPage() {
               />
               <textarea
                 rows={4}
-                placeholder="Write your thoughts..."
+                placeholder="Write your thoughts…"
                 value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
+                onChange={(e) => setComment(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 text-sm bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition resize-none"
               />
               <button
@@ -381,17 +403,15 @@ export default function BlogPage() {
                 disabled={
                   submitting || !commentName.trim() || !commentText.trim()
                 }
-                className="self-end flex items-center gap-2 px-5 py-2 rounded-full bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="self-end cursor-pointer flex items-center gap-2 px-5 py-2 rounded-full bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
-                {submitting && (
-                  <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                )}
-                {submitting ? "Posting..." : "Post comment"}
+                {submitting && <Spinner cls="border-white/40 border-t-white" />}
+                {submitting ? "Posting…" : "Post comment"}
               </button>
             </div>
           </div>
 
-          {/* Comment list */}
+          {/* List */}
           {comments.length === 0 ? (
             <p className="text-gray-400 text-sm text-center py-8">
               No comments yet. Be the first to share your thoughts!
@@ -412,10 +432,12 @@ export default function BlogPage() {
                         {c.name}
                       </span>
                       <span className="text-gray-300 text-xs">·</span>
-                      <span className="text-gray-400 text-xs">{c.date}</span>
+                      <span className="text-gray-400 text-xs">
+                        {c.createdAt}
+                      </span>
                     </div>
                     <p className="text-gray-600 text-sm leading-relaxed">
-                      {c.text}
+                      {c.comment}
                     </p>
                   </div>
                 </div>
@@ -428,25 +450,50 @@ export default function BlogPage() {
   );
 }
 
+/* ─── Tiny reusable components ───────────────────────────── */
+
+function Spinner({ cls }: { cls: string }) {
+  return (
+    <span className={`w-4 h-4 border-2 rounded-full animate-spin ${cls}`} />
+  );
+}
+
+function ChevronIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      className={`w-4 h-4 flex-shrink-0 text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      viewBox="0 0 24 24"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+    </svg>
+  );
+}
+
+/* ─── Skeleton (matches actual layout to prevent flicker) ── */
 function BlogSkeleton() {
   return (
-    <div className="w-[90%] md:w-[70%] lg:w-[60%] mx-auto px-4 md:px-6 py-12 animate-pulse">
+    <div className="w-[90%] md:w-[70%] lg:w-[58%] mx-auto px-4 md:px-6 py-12 animate-pulse">
+      {/* Category pill */}
       <div className="h-5 w-24 bg-gray-200 rounded-full mb-5 mx-auto" />
-      <div className="h-10 bg-gray-200 rounded mb-3 w-4/5 mx-auto" />
-      <div className="h-10 bg-gray-200 rounded mb-8 w-3/5 mx-auto" />
-      <div className="flex justify-between mb-6 pb-6 border-b border-gray-100">
-        <div className="flex gap-3 items-center">
-          <div className="w-8 h-8 rounded-full bg-gray-200" />
-          <div className="h-4 w-24 bg-gray-200 rounded" />
-        </div>
-        <div className="flex gap-2">
-          <div className="h-8 w-16 bg-gray-200 rounded-full" />
-          <div className="h-8 w-16 bg-gray-200 rounded-full" />
-        </div>
+      {/* Title */}
+      <div className="h-9 bg-gray-200 rounded mb-3 w-4/5 mx-auto" />
+      <div className="h-9 bg-gray-200 rounded mb-6 w-3/5 mx-auto" />
+      {/* Action bar — right-aligned, no author */}
+      <div className="flex justify-end gap-2 mb-8 pb-6 border-b border-gray-100">
+        <div className="h-9 w-16 bg-gray-200 rounded-full" />
+        <div className="h-9 w-20 bg-gray-200 rounded-full" />
       </div>
-      <div className="h-64 bg-gray-200 rounded-xl mb-10" />
-      {[...Array(6)].map((_, i) => (
-        <div key={i} className="h-4 bg-gray-200 rounded mb-3" />
+      {/* Hero image */}
+      <div className="w-full aspect-video bg-gray-200 rounded-xl mb-10" />
+      {/* Body lines */}
+      {[...Array(8)].map((_, i) => (
+        <div
+          key={i}
+          className={`h-4 bg-gray-200 rounded mb-3 ${i % 4 === 3 ? "w-3/4" : "w-full"}`}
+        />
       ))}
     </div>
   );

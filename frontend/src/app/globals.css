@@ -63,13 +63,13 @@ input:-webkit-autofill:focus {
   font-size: 1.5rem;
   font-weight: 700;
   color: #111827;
-  margin: 2.5rem 0 0.75rem;
+  margin: 1rem 0 0.75rem;
 }
 .blog-content h3 {
   font-size: 1.2rem;
   font-weight: 600;
   color: #1f2937;
-  margin: 1.75rem 0 0.5rem;
+  margin: 1rem 0 0.5rem;
 }
 .blog-content p {
   margin-bottom: 1.25rem;

@@ -12,23 +12,8 @@ const userScheama = new mongoose.Schema(
     password: {
       type: String,
     },
-    followers: [
-      {
-        type: String,
-      },
-    ],
 
-    likedBlogs: [
-      {
-        type: String,
-      },
-    ],
-    following: [
-      {
-        type: String,
-      },
-    ],
-    visitedBlog: [
+    savedBlogs: [
       {
         type: String,
       },

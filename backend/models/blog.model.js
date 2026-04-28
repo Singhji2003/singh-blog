@@ -39,6 +39,23 @@ const BlogsSchema = mongoose.Schema(
         },
       },
     ],
+    likes: [String],
+    comments: [
+      {
+        name: {
+          type: String,
+        },
+        comment: {
+          type: String,
+        },
+        userId: {
+          type: String,
+        },
+        createdAt: {
+          type: Date,
+        },
+      },
+    ],
   },
   {
     timestamp: true,

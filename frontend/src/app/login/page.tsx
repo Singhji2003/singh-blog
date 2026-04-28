@@ -38,9 +38,10 @@ export default function LoginPage() {
 
       if (response.status === 200) {
         Cookies.set("token", response?.data?.data?.token);
+        Cookies.set("Id", response?.data?.data?.id);
         Cookies.set("email", response?.data?.data?.email);
         toast.success("Logged In Successfully");
-        router.push("/");
+        router.replace("/");
       }
     } catch (err: any) {
       if (err.response) {

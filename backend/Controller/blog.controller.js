@@ -3,7 +3,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import cloudinary from "../config/cloudinary.js";
 export class BlogController {
   static getSingleBlog = async (req, res) => {
-    const response = await BlogService.getSingleBlog(req.params);
+    const response = await BlogService.getSingleBlog(req.params, req.query);
 
     if (response.error) {
       return ApiResponse.error(res, response.error, response.status);
@@ -79,5 +79,35 @@ export class BlogController {
         500,
       );
     }
+  };
+
+  static likeBlog = async (req, res) => {
+    const response = await BlogService.likeBlog(req.body);
+
+    if (response.error) {
+      return ApiResponse.error(res, response.error, response.status);
+    }
+    return ApiResponse.success(
+      res,
+      response,
+      "Blog Likes/Disliked Successfully",
+      200,
+    );
+  };
+  static saveBlog = async (req, res) => {
+    const response = await BlogService.saveBlog(req.body);
+
+    if (response.error) {
+      return ApiResponse.error(res, response.error, response.status);
+    }
+    return ApiResponse.success(res, response, "Blog Saved", 200);
+  };
+
+  static postComment = async (req, res) => {
+    const response = await BlogService.postComment(req.body);
+    if (response.error) {
+      return ApiResponse.error(res, response.error, response.status);
+    }
+    return ApiResponse.success(res, response, "Comment Posted!", 200);
   };
 }

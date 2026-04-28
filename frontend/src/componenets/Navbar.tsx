@@ -26,7 +26,10 @@ const Navbar = () => {
       {/* Top Bar */}
       <div className="flex justify-between py-4 px-8 items-center">
         {/* Logo */}
-        <Image src={Logo} className="w-42" alt="Logo" />
+        <Link href={"/"}>
+          {" "}
+          <Image src={Logo} className="w-42" alt="Logo" />
+        </Link>
 
         {/* Desktop Nav Links */}
         <div className="hidden md:flex gap-8 font-normal">
@@ -38,7 +41,7 @@ const Navbar = () => {
         </div>
 
         {/* Desktop Auth Buttons */}
-        {Cookies.get("token") ? (
+        {Cookies.get("Id") ? (
           <div className="hidden md:flex gap-6 items-center">
             <Link
               href="/subscribe"
@@ -110,7 +113,7 @@ const Navbar = () => {
           ))}
 
           {/* Mobile Auth Buttons */}
-          {Cookies.get("token") ? (
+          {Cookies.get("Id") ? (
             <>
               <Link
                 href="/subscribe"
