@@ -1,8 +1,12 @@
 "use client";
 import serverUrl from "@/utils/serverUrl";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import ClearIcon from "@mui/icons-material/Clear";
-/* ─── Types ─────────────────────────────────────────────── */
+import MicIcon from "@mui/icons-material/Mic";
+import StopIcon from "@mui/icons-material/Stop";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import StopCircleIcon from "@mui/icons-material/StopCircle";
+
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -13,15 +17,19 @@ interface BlogChatBotProps {
   blogTitle?: string;
 }
 
-/* ─── Component ──────────────────────────────────────────── */
 export default function BlogChatBot({ blogId, blogTitle }: BlogChatBotProps) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [appeared, setAppeared] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [speakingIndex, setSpeakingIndex] = useState<number | null>(null);
+
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const recognitionRef = useRef<any>(null);
+  const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   /* Greeting on first open */
   useEffect(() => {
@@ -29,27 +37,111 @@ export default function BlogChatBot({ blogId, blogTitle }: BlogChatBotProps) {
       setMessages([
         {
           role: "assistant",
-          content: `👋 Welcome to Singh Blog!\n\nI'm your AI reading companion. Ask me anything about **${blogTitle ?? "this article"}** — I'm here to help you explore, clarify, or dive deeper into any topic covered here.`,
+          content: `Welcome to Singh Blog!\nI'm your AI reading companion. Ask me anything about ${blogTitle ?? "this article"}.`,
         },
       ]);
     }
-    if (open) {
-      setTimeout(() => inputRef.current?.focus(), 150);
-    }
+    if (open) setTimeout(() => inputRef.current?.focus(), 150);
   }, [open]);
 
-  /* Auto-scroll */
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  /* Entrance animation */
   useEffect(() => {
     const t = setTimeout(() => setAppeared(true), 800);
     return () => clearTimeout(t);
   }, []);
 
-  /* Send message */
+  /* Stop any ongoing speech when chat closes */
+  useEffect(() => {
+    if (!open) {
+      window.speechSynthesis?.cancel();
+      setSpeakingIndex(null);
+      stopRecording();
+    }
+  }, [open]);
+
+  /* ── Speech-to-Text ── */
+  const startRecording = useCallback(() => {
+    const SpeechRecognitionAPI =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognitionAPI) {
+      alert("Speech recognition is not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognitionAPI() as any;
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setIsRecording(true);
+
+    recognition.onresult = (e: any) => {
+      const transcript = e.results[0][0].transcript;
+      setInput((prev) => (prev ? prev + " " + transcript : transcript));
+    };
+
+    recognition.onerror = () => setIsRecording(false);
+    recognition.onend = () => setIsRecording(false);
+
+    recognition.start();
+    recognitionRef.current = recognition;
+  }, []);
+
+  const stopRecording = useCallback(() => {
+    recognitionRef.current?.stop();
+    recognitionRef.current = null;
+    setIsRecording(false);
+  }, []);
+
+  const toggleMic = () => {
+    isRecording ? stopRecording() : startRecording();
+  };
+
+  const speakMessage = useCallback(
+    (text: string, index: number) => {
+      window.speechSynthesis.cancel();
+
+      if (speakingIndex === index) {
+        setSpeakingIndex(null);
+        return;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+
+      // 👇 Prefer Indian English
+      utterance.lang = "en-IN";
+      utterance.rate = 1.5;
+
+      const voices = window.speechSynthesis.getVoices();
+
+      // 👇 Try to find Indian voice first
+      const indianVoice =
+        voices.find((voice) => voice.lang === "en-IN") ||
+        voices.find((voice) => voice.name.toLowerCase().includes("india")) ||
+        voices.find(
+          (voice) => voice.name.toLowerCase().includes("heera"), // common Indian voice (Chrome)
+        ) ||
+        voices.find((voice) => voice.name.toLowerCase().includes("female"));
+
+      if (indianVoice) {
+        utterance.voice = indianVoice;
+      }
+
+      utterance.onstart = () => setSpeakingIndex(index);
+      utterance.onend = () => setSpeakingIndex(null);
+      utterance.onerror = () => setSpeakingIndex(null);
+
+      synthRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
+    },
+    [speakingIndex],
+  );
+  /* ── Send ── */
   const send = async () => {
     const text = input.trim();
     if (!text || loading) return;
@@ -65,32 +157,24 @@ export default function BlogChatBot({ blogId, blogTitle }: BlogChatBotProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          blogId: blogId,
+          blogId,
           blogTitle: blogTitle ?? "",
           userMessage: text,
-          history: messages
-            .filter((m) => m.role === "user" || m.role === "assistant")
-            .map((m) => ({
-              role: m.role,
-              content: m.content,
-            })),
+          history: messages.map((m) => ({ role: m.role, content: m.content })),
         }),
       });
 
       const data = await response.json();
-      console.log(data);
       const reply =
         data?.data?.msg ??
         "Sorry, I couldn't generate a response. Please try again.";
-
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
     } catch {
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content:
-            "Oops! Something went wrong. Please try again in a moment. 🙏",
+          content: "Oops! Something went wrong. Please try again. 🙏",
         },
       ]);
     } finally {
@@ -105,7 +189,6 @@ export default function BlogChatBot({ blogId, blogTitle }: BlogChatBotProps) {
     }
   };
 
-  /* ── Render ── */
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
       {/* Chat popup */}
@@ -162,7 +245,6 @@ export default function BlogChatBot({ blogId, blogTitle }: BlogChatBotProps) {
               key={i}
               className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
             >
-              {/* Avatar */}
               {msg.role === "assistant" && (
                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <svg
@@ -175,17 +257,40 @@ export default function BlogChatBot({ blogId, blogTitle }: BlogChatBotProps) {
                 </div>
               )}
 
-              {/* Bubble */}
-              <div
-                className={`max-w-[78%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap
-                  ${
-                    msg.role === "user"
-                      ? "bg-blue-600 text-white rounded-br-sm"
-                      : "bg-white text-gray-700 border border-gray-100 shadow-sm rounded-bl-sm"
-                  }`}
-              >
-                {msg.content}
-              </div>
+              {msg.role === "assistant" ? (
+                /* AI message + action buttons */
+                <div className="flex flex-col gap-1 max-w-[78%]">
+                  <div className="px-3.5 py-2.5 rounded-2xl rounded-bl-sm text-sm leading-relaxed whitespace-pre-wrap bg-white text-gray-700 border border-gray-100 shadow-sm">
+                    {msg.content}
+                  </div>
+                  {/* Action row */}
+                  <div className="flex items-center gap-1 pl-1">
+                    {/* Speaker button */}
+                    <button
+                      onClick={() => speakMessage(msg.content, i)}
+                      title={
+                        speakingIndex === i ? "Stop speaking" : "Read aloud"
+                      }
+                      className={`w-6 h-6 flex cursor-pointer items-center justify-center rounded-md text-gray-400 border transition-colors
+                        ${
+                          speakingIndex === i
+                            ? "border-blue-200 bg-blue-50 text-blue-500"
+                            : "border-gray-200 hover:border-gray-300 hover:text-gray-600 bg-white"
+                        }`}
+                    >
+                      {speakingIndex === i ? (
+                        <StopCircleIcon style={{ fontSize: 14 }} />
+                      ) : (
+                        <VolumeUpIcon style={{ fontSize: 14 }} />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="max-w-[78%] px-3.5 py-2.5 rounded-2xl rounded-br-sm text-sm leading-relaxed whitespace-pre-wrap bg-blue-600 text-white">
+                  {msg.content}
+                </div>
+              )}
             </div>
           ))}
 
@@ -234,11 +339,31 @@ export default function BlogChatBot({ blogId, blogTitle }: BlogChatBotProps) {
                   Math.min(e.target.scrollHeight, 96) + "px";
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Ask a question…"
+              placeholder={isRecording ? "Listening…" : "Ask a question…"}
               disabled={loading}
               className="flex-1 bg-transparent text-sm text-gray-800 placeholder:text-gray-400 resize-none outline-none leading-relaxed min-h-[24px] max-h-[96px] disabled:opacity-50"
               style={{ height: "24px" }}
             />
+
+            {/* Mic button */}
+            <button
+              onClick={toggleMic}
+              title={isRecording ? "Stop recording" : "Speak your question"}
+              className={`w-8 h-8 flex items-center cursor-pointer justify-center rounded-lg transition-all active:scale-95 flex-shrink-0
+                ${
+                  isRecording
+                    ? "bg-red-500 text-white animate-pulse"
+                    : "bg-gray-200 text-gray-500 hover:bg-gray-300 hover:text-gray-700"
+                }`}
+            >
+              {isRecording ? (
+                <StopIcon style={{ fontSize: 16 }} />
+              ) : (
+                <MicIcon style={{ fontSize: 16 }} />
+              )}
+            </button>
+
+            {/* Send button */}
             <button
               onClick={send}
               disabled={loading || !input.trim()}
@@ -263,50 +388,27 @@ export default function BlogChatBot({ blogId, blogTitle }: BlogChatBotProps) {
               )}
             </button>
           </div>
-          <p className="text-center text-[10px] text-gray-300 mt-1.5">
-            Powered by Claude AI · Press Enter to send
-          </p>
         </div>
       </div>
 
-      {/* FAB button */}
+      {/* FAB button — unchanged */}
       <div className="relative">
-        {/* Tooltip label */}
         {!open && appeared && (
           <div
-            className={`
-              absolute bottom-full right-0 mb-3 whitespace-nowrap
-              bg-gray-900 text-white text-xs font-medium px-3 py-1.5 rounded-lg
-              shadow-lg pointer-events-none
-              transition-all duration-500 delay-300
-              ${appeared ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"}
-            `}
+            className={`absolute bottom-full right-0 mb-3 whitespace-nowrap bg-gray-900 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-lg pointer-events-none transition-all duration-500 delay-300 ${appeared ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"}`}
           >
             🤖 AI is here to help
             <span className="absolute top-full right-4 border-4 border-transparent border-t-gray-900" />
           </div>
         )}
-
         <button
           onClick={() => setOpen((v) => !v)}
           title="Chat with AI"
-          className={`
-            relative w-14 h-14 cursor-pointer    rounded-full shadow-lg
-            flex items-center justify-center
-            transition-all duration-300 active:scale-95
-            ${
-              open
-                ? "bg-gray-700 hover:bg-gray-800 rotate-0"
-                : "bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 hover:shadow-blue-200 hover:shadow-xl"
-            }
-          `}
+          className={`relative w-14 h-14 cursor-pointer rounded-full shadow-lg flex items-center justify-center transition-all duration-300 active:scale-95 ${open ? "bg-gray-700 hover:bg-gray-800" : "bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 hover:shadow-blue-200 hover:shadow-xl"}`}
         >
-          {/* Ping ring when closed */}
           {!open && (
             <span className="absolute inset-0 rounded-full bg-blue-500 opacity-30 animate-ping" />
           )}
-
-          {/* Icon transition */}
           <span
             className={`absolute transition-all duration-200 ${open ? "opacity-100 rotate-0" : "opacity-0 rotate-90"}`}
           >

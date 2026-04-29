@@ -21,6 +21,15 @@ export class BlogController {
 
     return ApiResponse.success(res, response, "Blog fetched!", 200);
   };
+  static getAllBlog = async (req, res) => {
+    const response = await BlogService.getAllBlog();
+
+    if (response.error) {
+      return ApiResponse.error(res, response.error, response.status);
+    }
+
+    return ApiResponse.success(res, response, "Blog fetched!", 200);
+  };
   static generateSlug = (title) => {
     return title
       .toLowerCase()

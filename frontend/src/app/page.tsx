@@ -1,44 +1,38 @@
-import Image from "next/image";
-import Blog from "@/assets/images/blog.jpg";
 import ArrowForwardSharpIcon from "@mui/icons-material/ArrowForwardSharp";
 import ArticleCards from "@/componenets/Articlecards";
 import WeeklyDigest from "@/componenets/Weeklydigest";
 import JoinCTA from "@/componenets/Joincta";
 import Link from "next/link";
 import HomeCategory from "@/componenets/HomeCategory";
-export default function Home() {
-  const cards = [
-    {
-      image: Blog,
-      category: "Career",
-      timePeriod: "8 mins",
-      title: "The Quantum Leap: Navigating the 2025 Processor War",
-      description:
-        "Intel, AMD, and the rise of ARM architecture in the consumer laptop market.",
-      ownerAlias: "",
-      ownerName: "Singhji",
-    },
-    {
-      image: Blog,
-      category: "Career",
-      timePeriod: "8 mins",
-      title: "The Quantum Leap: Navigating the 2025 Processor War",
-      description:
-        "Intel, AMD, and the rise of ARM architecture in the consumer laptop market.",
-      ownerAlias: "",
-      ownerName: "Singhji",
-    },
-    {
-      image: Blog,
-      category: "Career",
-      timePeriod: "8 mins",
-      title: "The Quantum Leap: Navigating the 2025 Processor War",
-      description:
-        "Intel, AMD, and the rise of ARM architecture in the consumer laptop market.",
-      ownerAlias: "",
-      ownerName: "Singhji",
-    },
-  ];
+import serverUrl from "@/utils/serverUrl";
+import RisingDiscussion from "@/componenets/RisingDiscussion";
+async function getBlog() {
+  try {
+    const res = await fetch(`http://localhost:5000/api/v1/get-blog`, {
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const json = await res.json(); // ✅ parsed JSON
+
+    return json?.data || [];
+  } catch (err) {
+    console.error("API error:", err);
+    return []; // safe fallback
+  }
+}
+export default async function Home() {
+  let data;
+
+  try {
+    data = await getBlog();
+  } catch (err) {
+    console.error(err);
+  }
+
   return (
     <div className="md:mx-8 mx-4">
       {/* Hero Section */}
@@ -102,7 +96,7 @@ export default function Home() {
       </div>
 
       {/* Rising Discussions */}
-      <div className="py-8 -mx-8 px-8 md:mt-24 mt-16 bg-[#F6F3F2]">
+      <div className="py-8   px-8 md:mt-24 mt-16 bg-[#F6F3F2]">
         <div className="flex justify-between items-center">
           <h2 className="md:text-2xl text-xl font-bold ">Rising Discussions</h2>
           <p className="text-[#005EA3] flex gap-2">
@@ -112,31 +106,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="flex md:flex-row flex-col justify-between  gap-8 mt-6">
-          {cards.map((blog) => {
-            return (
-              <div className="">
-                <Image
-                  src={blog?.image}
-                  className="rounded-t-2xl"
-                  alt="Blog Image"
-                />
-                <div className="bg-white rounded-b-2xl pb-6">
-                  <div className="flex gap-4 p-4">
-                    <div className="bg-[#E7DEFF] text-sm rounded-full px-4 py-1 w-max text-[#4C2FA4]">
-                      {blog?.category?.toUpperCase()}
-                    </div>
-                    <div className="bg-[#E7DEFF] text-sm rounded-full px-4 py-1 w-max text-[#404752]">
-                      {blog?.timePeriod} Read
-                    </div>
-                  </div>
-                  <h2 className="text-lg mx-4 font-bold">{blog.title}</h2>
-                  <p className="text-[#404752] mx-4">{blog.description}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <RisingDiscussion initialData={data} />
       </div>
 
       {/* Editor's Choice */}

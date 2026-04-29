@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function JoinCTA() {
   return (
     <div className="bg-[#E5E3DF] rounded-4xl px-10 py-12 w-ful  text-center">
@@ -9,12 +11,18 @@ export default function JoinCTA() {
         essays, and follow your favorite authors.
       </p>
       <div className="flex md:flex-row flex-col items-center justify-center gap-3">
-        <button className="bg-[#005EA3] text-white text-sm font-semibold px-6 py-3 rounded-full hover:bg-blue-700 transition">
+        <Link
+          href={"/register"}
+          className="bg-[#005EA3]  cursor-pointer text-white text-sm font-semibold px-6 py-3 rounded-full hover:bg-blue-700 transition"
+        >
           Create Free Account
-        </button>
-        <button className="bg-transparent text-gray-800 text-sm font-semibold px-6 py-3 rounded-full border border-[#C0C7D4] hover:border-gray-400 hover:bg-white transition">
+        </Link>
+        <Link
+          href={"/category"}
+          className="bg-transparent  cursor-pointer text-gray-800 text-sm font-semibold px-6 py-3 rounded-full border border-[#C0C7D4] hover:border-gray-400 hover:bg-white transition"
+        >
           Explore Articles
-        </button>
+        </Link>
       </div>
     </div>
   );

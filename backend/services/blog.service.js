@@ -41,6 +41,15 @@ export class BlogService {
 
     return blogs;
   }
+  static async getAllBlog(data) {
+    const blogs = await BlogModel.find({});
+
+    if (!blogs) {
+      return { error: "Blog not found", status: 404 };
+    }
+
+    return blogs;
+  }
 
   static async addBlog(data, img) {
     const newBlog = await BlogModel.create({
@@ -198,28 +207,41 @@ Format rules:
       },
     ];
 
-    try {
-      const res = await axios.post(
-        "https://api.groq.com/openai/v1/chat/completions",
-        {
-          model: "meta-llama/llama-4-scout-17b-16e-instruct",
-          messages,
-          temperature: 0.6,
-          max_tokens: 600,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          timeout: 30000,
-        },
-      );
+    const MAX_RETRIES = 3;
 
-      return { msg: res.data.choices[0].message.content };
-    } catch (err) {
-      console.error("Groq Error:", err.response?.data || err.message);
-      throw new Error("Failed to generate answer");
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const res = await axios.post(
+          "https://api.groq.com/openai/v1/chat/completions",
+          {
+            model: "meta-llama/llama-4-scout-17b-16e-instruct",
+            messages,
+            temperature: 0.6,
+            max_tokens: 600,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            timeout: 30000,
+          },
+        );
+
+        return { msg: res.data.choices[0].message.content };
+      } catch (err) {
+        console.error(
+          `Attempt ${attempt} failed:`,
+          err.response?.data || err.message,
+        );
+
+        if (attempt === MAX_RETRIES) {
+          return { error: "Failed to generate answer after 3 attempts" };
+        }
+
+        // Optional: small delay before retry (helps avoid rate limits)
+        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+      }
     }
   }
 }
