@@ -115,7 +115,7 @@ export default function BlogChatBot({ blogId, blogTitle }: BlogChatBotProps) {
 
       // 👇 Prefer Indian English
       utterance.lang = "en-IN";
-      utterance.rate = 1.5;
+      utterance.rate = 1;
 
       const voices = window.speechSynthesis.getVoices();
 
