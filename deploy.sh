@@ -9,12 +9,12 @@ echo "Installing backend dependencies..."
 cd backend
 npm install
 
-echo "Building frontend..."
-cd ../frontend
-npm install
-rm -rf .next
-npm run build
-pm2 restart frontend
+# echo "Building frontend..."
+# cd ../frontend
+# npm install
+# rm -rf .next
+# npm run build
+# pm2 restart frontend
 echo "Restarting backend..."
 cd ../backend
 pm2 restart index

@@ -263,7 +263,7 @@ const team: TeamMember[] = [
     name: "Arpan Singh",
     role: "FOUNDER ",
     title: "Founde ",
-    bio: "Over 15 years in digital journalism and editorial strategy. Passionate about ethical media.",
+    bio: "Over 2 years in digital journalism and editorial strategy. Passionate about ethical media.",
     avatar: ArpanImg,
     email: "arpansinghrajput123@gmail.com",
   },
