@@ -8,7 +8,7 @@ import serverUrl from "@/utils/serverUrl";
 import RisingDiscussion from "@/componenets/RisingDiscussion";
 async function getBlog() {
   try {
-    const res = await fetch(`http://localhost:5000/api/v1/get-blog`, {
+    const res = await fetch(`https://api.featherbazaar.com/api/v1/get-blog`, {
       cache: "no-store",
     });
 
