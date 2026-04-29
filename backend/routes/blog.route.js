@@ -10,4 +10,6 @@ router.post("/like-blog", BlogController.likeBlog);
 router.post("/save-blog", BlogController.saveBlog);
 router.post("/post-comment", BlogController.postComment);
 
+router.post("/know-about-blog", BlogController.generateBlog);
+
 export default router;

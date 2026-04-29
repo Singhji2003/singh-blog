@@ -110,4 +110,9 @@ export class BlogController {
     }
     return ApiResponse.success(res, response, "Comment Posted!", 200);
   };
+
+  static generateBlog = async (req, res) => {
+    const response = await BlogService.generateBlogAnswer(req.body);
+    return ApiResponse.success(res, response, "Blog Generated!", 200);
+  };
 }

@@ -26,9 +26,12 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api/v1", userRoutes);
-app.use("/api/v1", categoryRoutes);
+app.use("/api/v1", categoryRoutes); 
 app.use("/api/v1", blogRoutes);
 app.use("/api/v1", contactRoutes);
+
+
+
 
 app.listen(5000, () => {
   console.log("Server is Running !");

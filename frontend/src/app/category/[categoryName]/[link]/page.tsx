@@ -6,6 +6,7 @@ import { ReactNode, useEffect, useState } from "react";
 import Head from "next/head";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
+import BlogChatBot from "@/componenets/Blogchatbot";
 
 /* ─── Types ─────────────────────────────────────────────── */
 interface FAQ {
@@ -446,6 +447,7 @@ export default function BlogPage() {
           )}
         </section>
       </article>
+      <BlogChatBot blogId={blogData._id} blogTitle={blogData.title} />
     </>
   );
 }
