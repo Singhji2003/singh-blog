@@ -52,7 +52,7 @@ const categories = [
 
 // 🔥 Runs daily at 8:00 AM IST
 cron.schedule(
-  "0 */2 * * *",
+  "0 */4 * * *",
   async () => {
     console.log("🌅 Cron started: Generating 3 blogs...");
 

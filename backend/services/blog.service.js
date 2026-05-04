@@ -313,6 +313,43 @@ MOOD:
   }
 
   // ✅ Generate Blog
+
+  static async callGemini(prompt) {
+    const models = ["gemini-flash-latest", "gemini-2.5-flash"];
+
+    let lastError;
+
+    for (const model of models) {
+      try {
+        const response = await axios.post(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+          {
+            contents: [
+              {
+                parts: [{ text: prompt }],
+              },
+            ],
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "X-goog-api-key": process.env.GEMINI_API_KEY,
+            },
+            // timeout: 30000,
+          },
+        );
+
+        const text = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (text) return text;
+      } catch (err) {
+        console.warn(`⚠️ Model failed: ${model}`);
+        lastError = err;
+      }
+    }
+
+    throw lastError;
+  }
   static async generateBlog(data) {
     const { category } = data;
     try {
@@ -363,25 +400,7 @@ RULES FOR LINK FIELD:
 - Example: "The Power of Discipline in Life" → "the-power-of-discipline-in-life"
 `;
 
-      const response = await axios.post(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent",
-        {
-          contents: [
-            {
-              parts: [{ text: prompt }],
-            },
-          ],
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "X-goog-api-key": process.env.GEMINI_API_KEY,
-          },
-        },
-      );
-
-      const aiText =
-        response.data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      const aiText = await this.callGemini(prompt);
 
       // ✅ Clean response
       const cleaned = aiText.replace(/```json|```/g, "").trim();
@@ -397,6 +416,7 @@ RULES FOR LINK FIELD:
 
       // ✅ Reset image
       blog.image = "";
+      blog.category = category;
 
       // ✅ Generate image using HF
       // optional safety check
