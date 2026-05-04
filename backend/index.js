@@ -50,6 +50,7 @@ const categories = [
   "Sports",
   "Lifestyle",
   "Travel",
+  "Philosophy",
 ];
 
 // 🔥 Runs daily at 8:00 AM IST

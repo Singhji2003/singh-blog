@@ -6,6 +6,7 @@ import Image, { StaticImageData } from "next/image";
 import Philosphy from "@/assets/images/Philosphy.png";
 import MenuBookSharpIcon from "@mui/icons-material/MenuBookSharp";
 import EnergySavingsLeafSharpIcon from "@mui/icons-material/EnergySavingsLeafSharp";
+import Link from "next/link";
 interface Article {
   id: number;
   category: string;
@@ -16,6 +17,7 @@ interface Article {
   variant: "image" | "navy" | "amber";
   imageSrc?: StaticImageData;
   cta?: string;
+  link?: string;
 }
 
 const articles: Article[] = [
@@ -30,6 +32,7 @@ const articles: Article[] = [
     variant: "image",
     imageSrc: Philosphy, // replace with your image path
     cta: "Keep Alive",
+    link: "/category/philosophy",
   },
   {
     id: 2,
@@ -40,6 +43,7 @@ const articles: Article[] = [
     author: "By Editorial Staff",
     authorIcon: "book",
     variant: "navy",
+    link: "/category/philosophy",
   },
   {
     id: 3,
@@ -50,6 +54,7 @@ const articles: Article[] = [
     author: "By Sustainable Dev Group",
     authorIcon: "shield",
     variant: "amber",
+    link: "/category/philosophy",
   },
 ];
 
@@ -81,43 +86,45 @@ function AuthorRow({
 // Card 1 – full bleed image with dark overlay
 function ImageCard({ article }: { article: Article }) {
   return (
-    <div className="relative rounded-2xl overflow-hidden h-full min-h-[380px] sm:min-h-[420px]">
-      {/* background image – swap src for a real image */}
-      <div className="absolute inset-0">
-        {article.imageSrc ? (
-          <Image
-            src={article.imageSrc}
-            alt={article.title}
-            fill
-            className="object-cover"
-            priority
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900" />
-        )}
-      </div>
+    <Link href={article.link || ""}>
+      <div className="relative rounded-2xl overflow-hidden h-full min-h-[380px] sm:min-h-[420px]">
+        {/* background image – swap src for a real image */}
+        <div className="absolute inset-0">
+          {article.imageSrc ? (
+            <Image
+              src={article.imageSrc}
+              alt={article.title}
+              fill
+              className="object-cover"
+              priority
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900" />
+          )}
+        </div>
 
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
 
-      {/* Content */}
-      <div className="relative h-full flex text-left flex-col justify-end p-7 gap-3">
-        <p className="text-xs font-semibold  tracking-widest text-white/60 uppercase">
-          {article.category}
-        </p>
-        <h2 className="text-3xl font-bold text-white leading-tight">
-          {article.title}
-        </h2>
-        <p className="text-sm text-white/70 leading-relaxed">
-          {article.description}
-        </p>
-        {article.cta && (
-          <button className="mt-2 self-start px-5 py-2 rounded-full bg-white text-black text-sm font-semibold hover:bg-white/90 transition-colors">
-            {article.cta}
-          </button>
-        )}
+        {/* Content */}
+        <div className="relative h-full flex text-left flex-col justify-end p-7 gap-3">
+          <p className="text-xs font-semibold  tracking-widest text-white/60 uppercase">
+            {article.category}
+          </p>
+          <h2 className="text-3xl font-bold text-white leading-tight">
+            {article.title}
+          </h2>
+          <p className="text-sm text-white/70 leading-relaxed">
+            {article.description}
+          </p>
+          {article.cta && (
+            <button className="mt-2 self-start px-5 py-2 rounded-full bg-white text-black text-sm font-semibold hover:bg-white/90 transition-colors">
+              {article.cta}
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -132,7 +139,8 @@ function SolidCard({
   accent: string;
 }) {
   return (
-    <div
+    <Link
+      href={article.link || ""}
       className={`relative rounded-2xl overflow-hidden ${bg} p-7 flex flex-col   justify-center gap-4 min-h-[250px]`}
     >
       {/* Decorative blob */}
@@ -155,7 +163,7 @@ function SolidCard({
       <div className="relative z-10">
         <AuthorRow icon={article.authorIcon} author={article.author} />
       </div>
-    </div>
+    </Link>
   );
 }
 

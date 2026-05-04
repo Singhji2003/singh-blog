@@ -21,20 +21,6 @@ const SearchIcon = () => (
   </svg>
 );
 
-const ChevronIcon = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-  >
-    <path d="M6 9l6 6 6-6" />
-  </svg>
-);
-
 const SORT_OPTIONS = [
   { value: "most-popular", label: "Most Popular" },
   { value: "alphabetical", label: "Alphabetical" },
@@ -66,7 +52,7 @@ export default function CategoriesPage() {
       const response = await axios.get(
         `${serverUrl}api/v1/category?hint=${search}`,
       );
-      console.log(response)
+      console.log(response);
       setCategories(response?.data?.data);
       setTotal(response?.data?.data?.length);
     } catch (err) {

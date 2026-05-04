@@ -16,6 +16,7 @@ import FastfoodSharpIcon from "@mui/icons-material/FastfoodSharp";
 import SportsBasketballSharpIcon from "@mui/icons-material/SportsBasketballSharp";
 import OndemandVideoSharpIcon from "@mui/icons-material/OndemandVideoSharp";
 import BoltSharpIcon from "@mui/icons-material/BoltSharp";
+import AutoStoriesSharpIcon from "@mui/icons-material/AutoStoriesSharp";
 export const TechnologyIcon = ({ color = "#6366F1", size = 20 }: IconProps) => (
   <PhonelinkSharpIcon sx={{ fontSize: size }} htmlColor={color} />
 );
@@ -66,6 +67,9 @@ export const EntertainmentIcon = ({
 export const MotivationIcon = ({ color = "#EAB308", size = 20 }: IconProps) => (
   <BoltSharpIcon sx={{ fontSize: size }} htmlColor={color} />
 );
+export const PhilosophyIcon = ({ color = "#EAB308", size = 20 }: IconProps) => (
+  <AutoStoriesSharpIcon sx={{ fontSize: size }} htmlColor={color} />
+);
 
 export const iconMap: Record<string, React.FC<IconProps>> = {
   technology: TechnologyIcon,
@@ -80,4 +84,5 @@ export const iconMap: Record<string, React.FC<IconProps>> = {
   sports: SportsIcon,
   entertainment: EntertainmentIcon,
   motivation: MotivationIcon,
+  philosophy: PhilosophyIcon,
 };

@@ -38,17 +38,17 @@ const RisingDiscussion = ({
             />
             <div className="bg-white rounded-b-2xl pb-6">
               <div className="flex gap-4 p-4">
-                <div className="bg-[#E7DEFF] md:text-sm text-xs rounded-full px-4 py-1 w-max text-[#4C2FA4]">
+                <div className="bg-[#E7DEFF] text-xs rounded-full px-4 py-1 w-max text-[#4C2FA4]">
                   {blog?.category?.toUpperCase()}
                 </div>
-                <div className="bg-[#E7DEFF] md:text-sm text-xs rounded-full px-4 py-1 w-max text-[#404752]">
+                <div className="bg-[#E7DEFF] text-xs rounded-full px-4 py-1 w-max text-[#404752]">
                   {blog?.timePeriod || "2 mins"} Read
                 </div>
               </div>
               <h2 className="text-base mx-4 font-bold line-clamp-2">
                 {blog.title}
               </h2>
-              <p className="text-[#404752] mx-4 tex-sm line-clamp-3">
+              <p className="text-[#404752] mx-4 text-sm line-clamp-3">
                 {blog.description}
               </p>
             </div>

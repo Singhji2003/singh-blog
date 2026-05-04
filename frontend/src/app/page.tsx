@@ -51,12 +51,18 @@ export default async function Home() {
             and the emerging trends that define our era.
           </p>
           <div className="flex gap-4">
-            <button className="px-6 py-2 w-max cursor-pointer text-white bg-[#005EA3] rounded-full">
+            <Link
+              href={"/category"}
+              className="px-6 py-2 w-max cursor-pointer text-white bg-[#005EA3] rounded-full"
+            >
               Explore Articles
-            </button>
-            <button className="px-6 py-2 w-max cursor-pointer text-black bg-transparent rounded-full border border-solid border-[#C0C7D4]">
-              Our Philosophy
-            </button>
+            </Link>
+            <Link
+              href={"/about"}
+              className="px-6 py-2 w-max cursor-pointer text-black bg-transparent rounded-full border border-solid border-[#C0C7D4]"
+            >
+              About Us
+            </Link>
           </div>
         </div>
 
