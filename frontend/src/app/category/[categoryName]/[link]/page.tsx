@@ -298,14 +298,14 @@ export default function BlogPage() {
         />
 
         {/* Bottom Like CTA */}
-        <div className="mt-12 flex flex-col items-center gap-4 py-10 border-y border-gray-100">
-          <p className="text-sm text-gray-400 tracking-wide uppercase font-medium text-xs">
+        <div className="mt-12 flex flex-col items-center  gap-4 py-10 border-y border-gray-100">
+          <p className="text-sm text-gray-400 tracking-wide uppercase  font-medium text-xs">
             Was this helpful?
           </p>
           <button
             onClick={handleLike}
             disabled={liking}
-            className={`group flex items-center gap-2.5 px-7 py-3 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm
+            className={`group flex items-center cursor-pointer gap-2.5 px-7 py-3 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm
               ${
                 liked
                   ? "bg-rose-500 text-white shadow-rose-200"
@@ -351,13 +351,13 @@ export default function BlogPage() {
               {blogData.faq.map((item, idx) => (
                 <div
                   key={idx}
-                  className="border border-gray-100 rounded-xl overflow-hidden"
+                  className="border border-gray-100  rounded-xl overflow-hidden"
                 >
                   <button
                     onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
                     className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left bg-white hover:bg-gray-50 transition-colors"
                   >
-                    <span className="font-medium text-gray-800 text-sm md:text-base">
+                    <span className="font-medium cursor-pointer text-gray-800 text-sm md:text-base">
                       {item.question}
                     </span>
                     <ChevronIcon open={openFaq === idx} />
