@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function SuggestBanner() {
   return (
     <div className="relative bg-[#F5F5F0] rounded-2xl px-8 py-12 mt-12 overflow-hidden">
@@ -26,9 +28,12 @@ export default function SuggestBanner() {
           Suggest a new category for our editorial team to cover. We are
           constantly expanding our horizons to match your curiosity.
         </p>
-        <button className="inline-flex items-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-semibold rounded-lg transition-colors duration-150 shadow-sm">
+        <Link
+          href={"/suggest-topic"}
+          className="inline-flex items-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-semibold rounded-lg transition-colors duration-150 shadow-sm"
+        >
           Suggest a Topic
-        </button>
+        </Link>
       </div>
     </div>
   );

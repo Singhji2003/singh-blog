@@ -5,6 +5,7 @@ import userRoutes from "./routes/user.route.js";
 import categoryRoutes from "./routes/category.route.js";
 import blogRoutes from "./routes/blog.route.js";
 import contactRoutes from "./routes/contact.route.js";
+import suggestionRoutes from "./routes/suggestion.route.js";
 import cors from "cors";
 import redisClient from "./config/redis.js";
 await redisClient.connect();
@@ -33,6 +34,7 @@ app.use("/api/v1", userRoutes);
 app.use("/api/v1", categoryRoutes);
 app.use("/api/v1", blogRoutes);
 app.use("/api/v1", contactRoutes);
+app.use("/api/v1", suggestionRoutes);
 
 // Categories pool
 const categories = [
