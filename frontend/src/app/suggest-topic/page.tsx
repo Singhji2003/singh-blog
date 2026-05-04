@@ -23,11 +23,15 @@ const page = () => {
 
       {/* Community Driven Editorial */}
       <div className="max-w-[540px] mx-auto mt-6">
-        <div className="flex items-start gap-4 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden p-0">
+        <div className="flex md:flex-row flex-col items-start gap-4 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden p-0">
           {/* Image placeholder */}
-          <Image src={SuggestImage} className="w-[60%] h-[200px] object-contain" alt="Suggest-Topic" />
+          <Image
+            src={SuggestImage}
+            className="md:w-[60%] w-full h-[200px] md:object-contain object-fill"
+            alt="Suggest-Topic"
+          />
           {/* Text */}
-          <div className="py-4 pr-5 flex flex-col justify-center">
+          <div className="md:py-4 pt-0 pb-6 pr-5 px-4 md:px-0 flex flex-col justify-center">
             <h3 className="text-lg font-semibold text-gray-800 mb-1">
               Community Driven Editorial
             </h3>
