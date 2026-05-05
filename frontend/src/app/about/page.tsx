@@ -296,7 +296,7 @@ const TrustSection: React.FC = () => (
     </div>
 
     {/* The Minds Behind The Curator */}
-    <div className="mx-auto mt-24">
+    {/* <div className="mx-auto mt-24">
       <h2 className="text-3xl mt-2 font-bold text-center ">
         The Minds Behind The Curator
       </h2>
@@ -307,7 +307,7 @@ const TrustSection: React.FC = () => (
             key={member.name}
             className="w-full max-w-xs rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 text-center transition hover:shadow-md"
           >
-            {/* Avatar */}
+           
 
             <Image
               src={member.avatar}
@@ -324,9 +324,7 @@ const TrustSection: React.FC = () => (
             <p className="mt-3 text-sm text-gray-500 leading-relaxed">
               {member.bio}
             </p>
-
-            {/* Actions */}
-            <div className="mt-5 flex items-center justify-center gap-4 text-gray-400">
+   <div className="mt-5 flex items-center justify-center gap-4 text-gray-400">
               <a
                 href={`mailto:${member.email}`}
                 aria-label="Email"
@@ -344,7 +342,7 @@ const TrustSection: React.FC = () => (
           </div>
         ))}
       </div>
-    </div>
+    </div> */}
   </section>
 );
 
