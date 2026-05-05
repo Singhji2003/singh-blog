@@ -354,10 +354,10 @@ MOOD:
     const { category } = data;
     try {
       const prompt = `
-    Generate a HIGH-QUALITY, SEO-optimized blog in JSON format.
+Generate a HIGH-QUALITY, SEO-optimized blog in JSON format.
 
 INPUT:
-- You will receive only a CATEGORY name   "${category}"
+- CATEGORY: "${category}"
 
 TASK:
 Based on the given category, automatically:
@@ -372,6 +372,12 @@ STRICT REQUIREMENTS:
 - Must include storytelling, examples, and actionable insights
 - Must be optimized for SEO and readability
 
+CATEGORY RULE (VERY IMPORTANT):
+- You MUST use the EXACT category provided in INPUT
+- DO NOT modify, rephrase, translate, or format it
+- Return it EXACTLY as: "${category}"
+- Even a small change is NOT allowed
+
 IMAGE RULE:
 - Do NOT return any image prompt
 - Leave "image" field empty string ""
@@ -383,7 +389,7 @@ RETURN FORMAT (STRICT JSON ONLY):
   "metaTitle": "",
   "metaDescription": "",
   "link": "slug generated from title (lowercase, words separated by dashes, no special characters)",
-  "category": "<INPUT CATEGORY>",
+  "category": "${category}",
   "image": "",
   "keywords": "",
   "faq": [
@@ -399,7 +405,6 @@ RULES FOR LINK FIELD:
 - Remove all special characters
 - Example: "The Power of Discipline in Life" → "the-power-of-discipline-in-life"
 `;
-
       const aiText = await this.callGemini(prompt);
 
       // ✅ Clean response
@@ -416,7 +421,7 @@ RULES FOR LINK FIELD:
 
       // ✅ Reset image
       blog.image = "";
-      blog.category = category;
+      // blog.category = category;
 
       // ✅ Generate image using HF
       // optional safety check

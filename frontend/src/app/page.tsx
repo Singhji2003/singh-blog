@@ -102,14 +102,14 @@ export default async function Home() {
       </div>
 
       {/* Rising Discussions */}
-      <div className="py-8   px-8 md:mt-24 mt-16 bg-[#F6F3F2]">
+      <div className="py-8   px-8 md:mt-24 rounded-xl mt-16 bg-[#F6F3F2]">
         <div className="flex justify-between items-center">
           <h2 className="md:text-2xl text-xl font-bold ">Rising Discussions</h2>
-          <p className="text-[#005EA3] flex gap-2">
+          {/* <p className="text-[#005EA3] flex gap-2">
             {" "}
             <span> View All</span>
             <ArrowForwardSharpIcon />
-          </p>
+          </p> */}
         </div>
 
         <RisingDiscussion initialData={data} />
