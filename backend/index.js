@@ -8,7 +8,6 @@ import contactRoutes from "./routes/contact.route.js";
 import suggestionRoutes from "./routes/suggestion.route.js";
 import cors from "cors";
 import redisClient from "./config/redis.js";
-await redisClient.connect();
 import cron from "node-cron";
 import { BlogService } from "./services/blog.service.js";
 import CacheService from "./services/cache.service.js";
@@ -16,6 +15,12 @@ import CacheService from "./services/cache.service.js";
 // Initialize app
 const app = express();
 dotenv.config();
+
+try {
+  // await redisClient.connect();
+} catch (err) {
+  console.error("Redis connection failed:", err.message);
+}
 
 // Mongoose connection
 dbConnect();
@@ -55,7 +60,7 @@ const categories = [
 
 // 🔥 Runs daily at 8:00 AM IST
 cron.schedule(
-  "0 */4 * * *",
+  "09 19 * * *",
   async () => {
     console.log("🌅 Cron started: Generating 3 blogs...");
 
@@ -87,6 +92,6 @@ cron.schedule(
   },
 );
 
-app.listen(5000, () => {
+app.listen(5000, "0.0.0.0", () => {
   console.log("Server is Running !");
 });

@@ -22,7 +22,7 @@ export class BlogController {
     return ApiResponse.success(res, response, "Blog fetched!", 200);
   };
   static getAllBlog = async (req, res) => {
-    const response = await BlogService.getAllBlog();
+    const response = await BlogService.getAllBlog(req.query);
 
     if (response.error) {
       return ApiResponse.error(res, response.error, response.status);

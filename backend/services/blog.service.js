@@ -43,13 +43,54 @@ export class BlogService {
     return blogs;
   }
   static async getAllBlog(data) {
-    const blogs = await BlogModel.find({});
+    const {
+      category,
+      search,
+      sortOrder = "latest",
+      page = 1,
+      limit = 5,
+    } = data;
 
-    if (!blogs) {
-      return { error: "Blog not found", status: 404 };
+    // Build filter query
+    const query = {};
+
+    // Category filter (skip if "All")
+    if (category && category !== "All") {
+      query.category = category;
     }
 
-    return blogs;
+    // Search filter (title or excerpt/content)
+    if (search && search.trim() !== "") {
+      query.$or = [
+        { title: { $regex: search.trim(), $options: "i" } },
+        { excerpt: { $regex: search.trim(), $options: "i" } },
+      ];
+    }
+
+    // Sort: latest = newest first, oldest = oldest first
+    const sort = { createdAt: sortOrder === "oldest" ? 1 : -1 };
+
+    // Pagination
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Run query + count in parallel
+    const [blogs, total] = await Promise.all([
+      BlogModel.find(query).sort(sort).skip(skip).limit(limitNum),
+      BlogModel.countDocuments(query),
+    ]);
+
+    if (!blogs || blogs.length === 0) {
+      return { error: "No blogs found", status: 404 };
+    }
+
+    return {
+      blogs,
+      total,
+      currentPage: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+    };
   }
 
   static async addBlog(data, img) {
@@ -249,57 +290,26 @@ Format rules:
   static async generateImage(prompt) {
     try {
       const response = await fetch(
-        "https://router.huggingface.co/nscale/v1/images/generations",
+        "https://router.huggingface.co/fal-ai/fal-ai/fast-sdxl",
         {
+          method: "POST",
           headers: {
             Authorization: `Bearer ${process.env.HF_TOKEN}`,
             "Content-Type": "application/json",
           },
-          method: "POST",
           body: JSON.stringify({
-            response_format: "b64_json",
-            prompt: `Create a high-quality, ultra realistic featured blog image representing the topic: "${prompt}".
-
-The image should visually interpret the idea, emotion, or concept of the title in a creative and meaningful way.
-
-STYLE REQUIREMENTS:
-- Cinematic composition
-- Professional photography style
-- Ultra realistic, high detail, sharp focus
-- Cinematic or natural lighting depending on the scene
-- Depth of field for realism
-- Editorial, modern stock-photo quality
-
-ASPECT RATIO:
-- MUST be 16:9 landscape format
-
-CONTENT RULES:
-- No text, no logos, no watermarks
-- No distorted faces or unreadable elements
-- Scene must match the topic naturally (abstract allowed if needed)
-- Adapt visuals based on category (motivation, tech, business, health, finance, education, lifestyle)
-
-MOOD:
-- Emotionally aligned with the topic
-- Highly engaging, storytelling-based visual
-- Professional and visually striking`,
-            model: "stabilityai/stable-diffusion-xl-base-1.0",
+            prompt: `Create a high-quality ultra realistic blog featured image about ${prompt}`,
           }),
         },
       );
+
       const api = await response.json();
 
-      // 🔥 BASE64 → BUFFER FIX
-      const buffer = Buffer.from(api.data[0].b64_json, "base64");
+      console.log(api);
 
-      if (buffer.length < 2000) {
-        console.log("Invalid image buffer");
-        return null;
-      }
-
-      return buffer;
+      return api;
     } catch (err) {
-      console.error("HF Image Error:", err.message);
+      console.error(err);
       return null;
     }
   }
@@ -314,12 +324,18 @@ MOOD:
 
   // ✅ Generate Blog
 
-  static async callGemini(prompt) {
-    const models = ["gemini-flash-latest", "gemini-2.5-flash"];
+  static async callAI(prompt) {
+    const geminiModels = [
+      "gemini-2.5-flash",
+      "gemini-1.5-flash",
+      "gemini-1.5-pro",
+      "gemini-flash-latest",
+    ];
 
     let lastError;
 
-    for (const model of models) {
+    // 🔹 STEP 1: Try Gemini models
+    for (const model of geminiModels) {
       try {
         const response = await axios.post(
           `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
@@ -335,21 +351,60 @@ MOOD:
               "Content-Type": "application/json",
               "X-goog-api-key": process.env.GEMINI_API_KEY,
             },
-            // timeout: 30000,
+            timeout: 20000,
           },
         );
 
         const text = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-        if (text) return text;
+        if (text) {
+          console.log(`✅ Gemini success: ${model}`);
+          return text;
+        }
       } catch (err) {
-        console.warn(`⚠️ Model failed: ${model}`);
+        console.warn(`⚠️ Gemini failed: ${model}`);
         lastError = err;
       }
     }
 
+    // 🔹 STEP 2: Fallback to GROQ (LLaMA)
+    try {
+      console.log("🔁 Switching to Hugging face fallback...");
+
+      const res = await axios.post(
+        "https://router.huggingface.co/v1/chat/completions",
+        {
+          messages: [
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          model: "Qwen/Qwen2.5-7B-Instruct:together",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.HF_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      // Actual AI response text
+      return res.data.choices[0].message.content;
+
+      // if (text) {
+      //   console.log("✅ GROQ fallback success");
+      //   return text;
+      // }
+    } catch (err) {
+      console.error("❌ Hugging face also failed");
+      lastError = err;
+    }
+
+    // ❌ Final failure
     throw lastError;
   }
+
   static async generateBlog(data) {
     const { category } = data;
     try {
@@ -405,7 +460,7 @@ RULES FOR LINK FIELD:
 - Remove all special characters
 - Example: "The Power of Discipline in Life" → "the-power-of-discipline-in-life"
 `;
-      const aiText = await this.callGemini(prompt);
+      const aiText = await this.callAI(prompt);
 
       // ✅ Clean response
       const cleaned = aiText.replace(/```json|```/g, "").trim();
@@ -452,6 +507,7 @@ RULES FOR LINK FIELD:
         stream.end(buffer); // ✅ correct binary upload
       });
       blog.image = uploadResult.url;
+      blog.category = category;
       console.log(blog);
       const uplaodedBlog = await BlogModel.create(blog);
       return uplaodedBlog;

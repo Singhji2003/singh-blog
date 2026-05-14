@@ -27,7 +27,7 @@ const RisingDiscussion = ({
           <Link
             href={`/category/${blog.category}/${blog.link}`}
             key={blog._id}
-            className=""
+            className="md:w-[25%] relative w-auto"
           >
             <Image
               src={blog?.image}
@@ -36,15 +36,11 @@ const RisingDiscussion = ({
               width={200}
               height={200}
             />
-            <div className="bg-white rounded-b-2xl pb-6">
-              <div className="flex gap-4 p-4">
-                <div className="bg-[#E7DEFF] text-xs rounded-full px-4 py-1 w-max text-[#4C2FA4]">
+             <div className="bg-[#E7DEFF] absolute top-0 right-0 text-xs rounded-tr-2xl px-4 py-1 w-max text-[#4C2FA4]">
                   {blog?.category?.toUpperCase()}
                 </div>
-                <div className="bg-[#E7DEFF] text-xs rounded-full px-4 py-1 w-max text-[#404752]">
-                  {blog?.timePeriod || "2 mins"} Read
-                </div>
-              </div>
+            <div className="bg-white rounded-b-2xl pt-3 pb-6">
+              
               <h2 className="text-base mx-4 font-bold line-clamp-2">
                 {blog.title}
               </h2>
