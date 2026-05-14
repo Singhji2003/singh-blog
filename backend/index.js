@@ -14,6 +14,7 @@ import CacheService from "./services/cache.service.js";
 
 // Initialize app
 const app = express();
+app.set("trust proxy", true);
 dotenv.config();
 
 try {
@@ -32,6 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // health check
 app.get("/health", (req, res) => {
+  console.log("HOST:", req.headers.host);
   return res.status(200).json({ msg: "Server is Running!! 🎉 " });
 });
 
